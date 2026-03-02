@@ -1,0 +1,2 @@
+-- seed.sql
+-- Development seed data — populated in a later phase.

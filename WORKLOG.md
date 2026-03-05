@@ -42,3 +42,20 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - VCH-25 (RLS) can now proceed since DB migrations are applied.
 **Open questions:** None
 **Tests:** Passing (0 tests, vitest --passWithNoTests)
+
+---
+
+## 2026-03-05 — Claude Code (Orchestrator) — VCH-28
+**Completed:** Created `contracts/types.ts` with all shared TypeScript types and the `IMPORTANCE` constant. Created `types/index.ts` as a re-export barrel. Fixed `tsconfig.json` to exclude `vitest.config.ts` (resolves `import.meta` module conflict).
+**Decisions made:**
+- Hex colours and shapes sourced directly from PRD Appendix (REQ-17): FYI=#9CA3AF/circle, Recommend=#3B82F6/triangle, Important=#F59E0B/diamond, Critical=#EF4444/star.
+- Nullable DB columns (`created_by`, `phone`, etc.) typed as `T | null` to match schema exactly.
+- Date/time fields typed as `string` — Supabase JS client serialises all date/time values to ISO strings.
+- Extracted `UserSummary` as a named type alias for `Pick<User, 'id' | 'display_name' | 'avatar_url'>` to avoid repetition.
+**Contracts changed:** Yes — `contracts/types.ts` created (new file, not a modification).
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- All types are importable via `@/contracts/types` or `@/types` (re-export).
+- VCH-25 (RLS) can now proceed — all table names and column shapes are finalised.
+**Open questions:** None
+**Tests:** Passing (typecheck + lint + vitest all exit 0)

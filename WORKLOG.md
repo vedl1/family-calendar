@@ -79,3 +79,21 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Open questions:**
 - `supabase db push` needed by human after this PR merges to apply policies to the live DB.
 **Tests:** N/A — RLS policies have no automated test coverage yet (manual verification steps in PR description)
+
+---
+
+## 2026-03-05 — Factory (Claude Code) — VCH-39 + VCH-40
+**Completed:** Created `lib/auth.ts` (auth helper functions) and `hooks/useAuth.ts` (React auth state hook).
+**Decisions made:**
+- `lib/auth.ts` wraps five Supabase auth operations as thin async functions: `signInWithEmail`, `signUpWithEmail`, `signInWithPhone`, `verifyPhoneOtp`, `signOut`, `getSession`. Each returns the raw Supabase result so callers control error handling.
+- `hooks/useAuth.ts` hydrates from the persisted session on mount, then subscribes to `onAuthStateChange` so components re-render on sign-in, sign-out, and token refresh. Cleans up subscription on unmount.
+- Typed via `@supabase/supabase-js` native `User` and `Session` types — no need to add wrapper types in `contracts/types.ts`.
+- Google OAuth not included: `expo-auth-session` / `expo-web-browser` are not installed. Should be a separate ticket once those packages are approved.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import auth functions: `import { signInWithEmail, signOut } from '@/lib/auth'`
+- Import the hook: `import { useAuth } from '@/hooks/useAuth'`
+- `useAuth()` returns `{ user, session, loading }` — `loading` is true only during the initial session hydration.
+**Open questions:** None
+**Tests:** Passing (typecheck + lint pass; vitest exits 0 with no test files)

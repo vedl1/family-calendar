@@ -82,18 +82,25 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
-## 2026-03-05 — Factory (Claude Code) — VCH-39 + VCH-40
-**Completed:** Created `lib/auth.ts` (auth helper functions) and `hooks/useAuth.ts` (React auth state hook).
+## 2026-03-05 — Factory (Claude Code) — VCH-39 + VCH-40 (rev 2)
+**Completed:** `lib/auth.ts` and `hooks/useAuth.ts` reworked per orchestrator review on PR #9.
 **Decisions made:**
-- `lib/auth.ts` wraps five Supabase auth operations as thin async functions: `signInWithEmail`, `signUpWithEmail`, `signInWithPhone`, `verifyPhoneOtp`, `signOut`, `getSession`. Each returns the raw Supabase result so callers control error handling.
-- `hooks/useAuth.ts` hydrates from the persisted session on mount, then subscribes to `onAuthStateChange` so components re-render on sign-in, sign-out, and token refresh. Cleans up subscription on unmount.
-- Typed via `@supabase/supabase-js` native `User` and `Session` types — no need to add wrapper types in `contracts/types.ts`.
-- Google OAuth not included: `expo-auth-session` / `expo-web-browser` are not installed. Should be a separate ticket once those packages are approved.
+- Removed `signInWithEmail` / `signUpWithEmail` — not in PRD (REQ-01 Google OAuth, REQ-02 Phone OTP only).
+- Added `signInWithGoogle()`: uses `expo-auth-session` `makeRedirectUri` + `expo-web-browser` `openAuthSessionAsync`, then calls `supabase.auth.exchangeCodeForSession(redirectUrl)` for PKCE completion. `WebBrowser.maybeCompleteAuthSession()` called at module level.
+- Renamed `signInWithPhone` → `sendOTP`, `verifyPhoneOtp` → `verifyOTP` to match VCH-39 spec names.
+- All functions now throw on error and return typed values (`Promise<void>`, `Promise<Session>`, etc.) rather than raw Supabase response objects.
+- Added `createOrUpdateUserProfile({ display_name, avatar_url? }): Promise<User>` — upserts to public `users` table using auth user id/email/phone; required for onboarding (VCH-8).
+- Added `getCurrentUser(): Promise<User | null>` — fetches profile from `users` table; returns null on PGRST116 (pre-onboarding state).
+- `hooks/useAuth.ts`: `user` is now `User` from `@/contracts/types` (profile row), not supabase-js auth user. Hook fetches profile via `getCurrentUser()` on mount and after each auth state change.
+- `loading` renamed to `isLoading`; added `isAuthenticated: session !== null`.
+- Hook now returns full action set: `signInWithGoogle`, `sendOTP`, `verifyOTP`, `signOut`, `updateProfile`.
+- Added `AsyncStorage` from `@react-native-async-storage/async-storage` to `lib/supabase.ts` auth config for reliable session persistence on React Native.
 **Contracts changed:** No
-**Dependencies introduced:** None
+**Dependencies introduced:** `expo-auth-session ~5.5.2`, `expo-web-browser ~14.0.1`, `expo-crypto ~13.0.2`, `@react-native-async-storage/async-storage ^2.0.0`
 **Next agent needs to know:**
-- Import auth functions: `import { signInWithEmail, signOut } from '@/lib/auth'`
+- Import auth functions: `import { signInWithGoogle, sendOTP, verifyOTP, signOut } from '@/lib/auth'`
 - Import the hook: `import { useAuth } from '@/hooks/useAuth'`
-- `useAuth()` returns `{ user, session, loading }` — `loading` is true only during the initial session hydration.
+- `useAuth()` returns `{ user, session, isLoading, isAuthenticated, signInWithGoogle, sendOTP, verifyOTP, signOut, updateProfile }`
+- `user` is the public `users` profile row — will be `null` until `updateProfile` is called post-sign-in (pre-onboarding).
 **Open questions:** None
-**Tests:** Passing (typecheck + lint pass; vitest exits 0 with no test files)
+**Tests:** Passing (typecheck + lint + vitest all exit 0)

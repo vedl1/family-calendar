@@ -1,53 +1,113 @@
 /**
- * hooks/useAuth.ts — React hook that exposes the current auth state.
- * Subscribes to Supabase auth state changes so components re-render
- * automatically on sign-in, sign-out, and token refresh.
+ * hooks/useAuth.ts — Exposes auth state and bound action functions.
+ * Uses User from @/contracts/types (the public users profile row),
+ * not the raw Supabase auth user object.
  */
 
 import { useEffect, useState } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
+import type { User } from '@/contracts/types';
 import { supabase } from '@/lib/supabase';
+import {
+  signInWithGoogle as authSignInWithGoogle,
+  sendOTP as authSendOTP,
+  verifyOTP as authVerifyOTP,
+  signOut as authSignOut,
+  createOrUpdateUserProfile,
+  getCurrentUser,
+} from '@/lib/auth';
 
 export interface AuthState {
-  /** The authenticated Supabase user, or null when signed out. */
+  /** Profile row from the public users table, or null when signed out / pre-onboarding. */
   user: User | null;
-  /** The current Supabase session (contains access/refresh tokens), or null. */
+  /** Supabase session (access/refresh tokens), or null when signed out. */
   session: Session | null;
-  /** True while the initial session is being fetched from storage. */
-  loading: boolean;
+  /** True while the initial session and profile are being fetched from storage. */
+  isLoading: boolean;
+  /** Derived convenience — true when a valid session exists. */
+  isAuthenticated: boolean;
+  signInWithGoogle: () => Promise<void>;
+  sendOTP: (phone: string) => Promise<void>;
+  verifyOTP: (phone: string, token: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  updateProfile: (params: { display_name: string; avatar_url?: string }) => Promise<void>;
 }
 
 /**
- * Returns the current auth state and stays in sync with Supabase auth events.
+ * Returns live auth state and bound action functions.
  *
  * @example
- * const { user, loading } = useAuth();
- * if (loading) return <Spinner />;
- * if (!user) return <Redirect href="/login" />;
+ * const { user, isLoading, isAuthenticated, signOut } = useAuth();
+ * if (isLoading) return <Spinner />;
+ * if (!isAuthenticated) return <Redirect href="/login" />;
  */
 export function useAuth(): AuthState {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Hydrate from persisted session on mount.
-    supabase.auth.getSession().then(({ data }) => {
+    // Hydrate from persisted session on mount, then fetch profile row.
+    supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
+      if (data.session) {
+        const profile = await getCurrentUser();
+        setUser(profile);
+      }
+      setIsLoading(false);
     });
 
-    // Keep state in sync with auth events (sign-in, sign-out, token refresh).
+    // Keep session and profile in sync with all auth events.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
+      async (_event, newSession) => {
         setSession(newSession);
-        setUser(newSession?.user ?? null);
+        if (newSession) {
+          const profile = await getCurrentUser();
+          setUser(profile);
+        } else {
+          setUser(null);
+        }
       },
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
-  return { user, session, loading };
+  const signInWithGoogle = async (): Promise<void> => {
+    await authSignInWithGoogle();
+    // Session update handled by onAuthStateChange.
+  };
+
+  const sendOTP = async (phone: string): Promise<void> => {
+    await authSendOTP(phone);
+  };
+
+  const verifyOTP = async (phone: string, token: string): Promise<void> => {
+    await authVerifyOTP(phone, token);
+    // Session update handled by onAuthStateChange.
+  };
+
+  const signOut = async (): Promise<void> => {
+    await authSignOut();
+  };
+
+  const updateProfile = async (params: {
+    display_name: string;
+    avatar_url?: string;
+  }): Promise<void> => {
+    const updated = await createOrUpdateUserProfile(params);
+    setUser(updated);
+  };
+
+  return {
+    user,
+    session,
+    isLoading,
+    isAuthenticated: session !== null,
+    signInWithGoogle,
+    sendOTP,
+    verifyOTP,
+    signOut,
+    updateProfile,
+  };
 }

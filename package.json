@@ -12,12 +12,16 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.0.0",
     "@supabase/supabase-js": "^2.47.0",
     "expo": "~52.0.0",
+    "expo-auth-session": "~5.5.2",
     "expo-constants": "~17.0.3",
+    "expo-crypto": "~13.0.2",
     "expo-linking": "~7.0.3",
     "expo-router": "~4.0.9",
     "expo-status-bar": "~2.0.0",
+    "expo-web-browser": "~14.0.1",
     "nativewind": "~4.0.36",
     "react": "18.3.1",
     "react-native": "0.76.5",

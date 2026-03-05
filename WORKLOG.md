@@ -23,3 +23,22 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Open questions:**
 - `supabase db push` requires human to run `supabase login` (or set `SUPABASE_ACCESS_TOKEN`) and then `supabase link --project-ref tkmlftjbzwvdjdsutauz` before pushing. The migration SQL is complete and correct; it just needs authenticated CLI access to push.
 **Tests:** N/A — no test framework configured yet (VCH-31 scope)
+
+---
+
+## 2026-03-05 — Claude Code (Orchestrator) — VCH-31
+**Completed:** Scaffolded the Expo (React Native) project. Created `package.json`, `tsconfig.json`, `babel.config.js`, `metro.config.js`, `tailwind.config.js`, `global.css`, `.eslintrc.js`, `vitest.config.ts`, `app/_layout.tsx`, `lib/supabase.ts`, and `.env.example`. All tooling scripts are operational.
+**Decisions made:**
+- Used `process.env.EXPO_PUBLIC_*` for Supabase env vars (Expo's standard mechanism for public env vars, injected at build time).
+- Added `--passWithNoTests` to `vitest run` so `npm run test` exits 0 with no test files present.
+- Used `--legacy-peer-deps` for npm install due to minor React peer dep range mismatch between packages; no functional impact.
+- NativeWind v4 configured with `babel-preset-expo` + `jsxImportSource: 'nativewind'` as per NativeWind v4 docs.
+**Contracts changed:** No
+**Dependencies introduced:** expo ~52.0.0, react 18.3.1, react-native 0.76.5, @supabase/supabase-js ^2.47.0, nativewind ~4.0.36, tailwindcss ^3.4.0, expo-router ~4.0.9, react-native-reanimated ~3.16.1, vitest ^2.1.0, typescript ^5.3.3, eslint ^8.57.0
+**Next agent needs to know:**
+- `import { supabase } from '@/lib/supabase'` is ready for use.
+- `npm run typecheck`, `npm run lint`, `npm run test` all pass.
+- VCH-28 (types.ts) should create `contracts/types.ts` — typecheck will validate it automatically.
+- VCH-25 (RLS) can now proceed since DB migrations are applied.
+**Open questions:** None
+**Tests:** Passing (0 tests, vitest --passWithNoTests)

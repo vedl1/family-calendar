@@ -59,3 +59,23 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - VCH-25 (RLS) can now proceed — all table names and column shapes are finalised.
 **Open questions:** None
 **Tests:** Passing (typecheck + lint + vitest all exit 0)
+
+---
+
+## 2026-03-05 — Claude Code (Orchestrator) — VCH-25
+**Completed:** Created `supabase/migrations/20260305000001_rls_policies.sql` with RLS enabled on all 6 tables and all policies from the ticket spec. Added helper functions, a group-creation trigger, and a share-token RPC.
+**Decisions made:**
+- Added `is_active_member(UUID)` and `is_group_admin(UUID)` as SECURITY DEFINER helper functions — keeps policies readable and prevents infinite recursion by bypassing RLS internally.
+- Added `trg_group_created` trigger (SECURITY DEFINER) on `groups` that auto-inserts the creator as an `admin`/`active` member. This solves the chicken-and-egg problem where no admin exists yet to satisfy the `group_members` INSERT policy on a brand new group.
+- Added `set_share_token(UUID)` RPC — client calls this before querying events via a share link. Sets a transaction-scoped `app.share_token` config var checked in the events SELECT policy via `NULLIF(current_setting('app.share_token', true), '')::uuid`.
+- `events` INSERT/UPDATE/DELETE are member-gated at DB level; creator-or-admin enforcement (REQ-16) is delegated to the application layer to avoid complex policy logic.
+- `group_members` UPDATE allows self-update (`auth.uid() = user_id`) so invitees can accept their own pending invite.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- To create a group: INSERT into `groups` — the trigger auto-creates the admin membership. No separate INSERT into `group_members` needed.
+- To access events via share link: call `supabase.rpc('set_share_token', { p_token })` first, then query `events`.
+- The `anon` role can read `share_links` and `events` (with valid token); it cannot read `rsvps`, `group_members`, or `users`.
+**Open questions:**
+- `supabase db push` needed by human after this PR merges to apply policies to the live DB.
+**Tests:** N/A — RLS policies have no automated test coverage yet (manual verification steps in PR description)

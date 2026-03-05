@@ -3,11 +3,6 @@
 -- [VCH-22]
 
 -- ============================================================
--- EXTENSIONS
--- ============================================================
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- ============================================================
 -- UTILITY: updated_at trigger function
 -- ============================================================
 CREATE OR REPLACE FUNCTION set_updated_at()
@@ -22,7 +17,7 @@ $$ LANGUAGE plpgsql;
 -- TABLE: users
 -- ============================================================
 CREATE TABLE users (
-  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   phone        TEXT,
   email        TEXT,
   display_name TEXT,
@@ -34,10 +29,10 @@ CREATE TABLE users (
 -- TABLE: groups
 -- ============================================================
 CREATE TABLE groups (
-  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name        TEXT        NOT NULL,
   description TEXT,
-  created_by  UUID        NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+  created_by  UUID        REFERENCES users(id) ON DELETE SET NULL,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -45,7 +40,7 @@ CREATE TABLE groups (
 -- TABLE: group_members
 -- ============================================================
 CREATE TABLE group_members (
-  id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   group_id   UUID        NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
   user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   role       TEXT        NOT NULL DEFAULT 'member' CHECK (role IN ('member', 'admin')),
@@ -58,9 +53,9 @@ CREATE TABLE group_members (
 -- TABLE: events
 -- ============================================================
 CREATE TABLE events (
-  id             UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   group_id       UUID        NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-  created_by     UUID        NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+  created_by     UUID        REFERENCES users(id) ON DELETE SET NULL,
   title          TEXT        NOT NULL,
   description    TEXT        CHECK (char_length(description) <= 120),
   importance     TEXT        NOT NULL DEFAULT 'fyi' CHECK (importance IN ('fyi', 'recommend', 'important', 'critical')),
@@ -78,7 +73,7 @@ CREATE TABLE events (
 -- TABLE: rsvps
 -- ============================================================
 CREATE TABLE rsvps (
-  id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id   UUID        NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   status     TEXT        NOT NULL CHECK (status IN ('attending', 'declined')),
@@ -90,10 +85,10 @@ CREATE TABLE rsvps (
 -- TABLE: share_links
 -- ============================================================
 CREATE TABLE share_links (
-  id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   group_id   UUID        NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-  token      UUID        NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
-  created_by UUID        NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+  token      UUID        NOT NULL UNIQUE DEFAULT gen_random_uuid(),
+  created_by UUID        REFERENCES users(id) ON DELETE SET NULL,
   expires_at TIMESTAMPTZ,
   revoked    BOOLEAN     NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

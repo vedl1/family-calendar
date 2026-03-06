@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -35,6 +35,10 @@ export default function SignInScreen() {
   const [loadingPhone, setLoadingPhone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) router.replace('/');
+  }, [isAuthenticated, isLoading, router]);
+
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
@@ -45,7 +49,6 @@ export default function SignInScreen() {
   }
 
   if (isAuthenticated) {
-    router.replace('/');
     return null;
   }
 

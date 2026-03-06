@@ -18,7 +18,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app uses your photos for your profile picture."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -104,3 +104,17 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - `user` is the public `users` profile row — will be `null` until `updateProfile` is called post-sign-in (pre-onboarding).
 **Open questions:** None
 **Tests:** Passing (typecheck + lint + vitest all exit 0)
+
+---
+
+## 2026-03-05 — Codex — VCH-41
+**Completed:** Created `tests/unit/auth/auth.test.ts` (25 tests) and `tests/unit/auth/useAuth.test.ts` (12 tests) covering all functions in `lib/auth.ts` and `hooks/useAuth.ts`.
+**Decisions made:**
+- `lib/auth.ts` tests: full happy-path + error-path coverage for all 7 exported functions (`signInWithGoogle`, `sendOTP`, `verifyOTP`, `signOut`, `getSession`, `createOrUpdateUserProfile`, `getCurrentUser`). Supabase, `expo-web-browser`, and `expo-auth-session` fully mocked.
+- `hooks/useAuth.ts` tests: React's `useState`/`useEffect` mocked via `vi.mock('react')` so the hook can be called outside a render cycle in the node environment (no jsdom/`@testing-library/react` needed). Tests cover returned shape, initial state, `isAuthenticated` derivation, all action delegation, and mount-time effects.
+- `vi.hoisted()` used in `useAuth.test.ts` to share mock references inside hoisted `vi.mock` factories.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:** All auth tests pass; full hook lifecycle/state-transition tests (e.g. `onAuthStateChange` firing and state updating) would require jsdom + `@testing-library/react` if needed in the future.
+**Open questions:** None
+**Tests:** 37 passed (25 lib/auth + 12 useAuth) — typecheck + lint + vitest all exit 0

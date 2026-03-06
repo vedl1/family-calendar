@@ -118,3 +118,19 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Next agent needs to know:** All auth tests pass; full hook lifecycle/state-transition tests (e.g. `onAuthStateChange` firing and state updating) would require jsdom + `@testing-library/react` if needed in the future.
 **Open questions:** None
 **Tests:** 37 passed (25 lib/auth + 12 useAuth) — typecheck + lint + vitest all exit 0
+
+---
+
+## 2026-03-06 — Cursor — VCH-6
+**Completed:** Built sign-in screen at `app/(auth)/sign-in.tsx` with Google OAuth and phone OTP (REQ-01, REQ-02). Added `app/(auth)/_layout.tsx` for the auth route group and `app/nativewind.d.ts` so NativeWind `className` types are applied.
+**Decisions made:**
+- All auth actions use `useAuth()` from `@/hooks/useAuth` (signInWithGoogle, sendOTP, verifyOTP). On success, redirect via `router.replace('/')`.
+- Phone flow: single phone field (E.164 hint), then "Send code" → OTP input + "Verify"; "Use a different number" resets to phone entry. Errors shown in a red banner.
+- Loading states: full-screen loader while `isLoading`; button-level loaders for Google and phone actions.
+- Design: minimal layout (Cron/Notion style), SafeAreaView, KeyboardAvoidingView, ScrollView. Styling via NativeWind (Tailwind) classes.
+- `app/nativewind.d.ts` references `react-native-css-interop/types.d.ts` so TypeScript accepts `className` on RN components without changing lib/ or contracts.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:** Sign-in route is `/sign-in`. Root index (`/`) should handle post-auth (e.g. redirect unauthenticated users to `/sign-in`).
+**Open questions:** None
+**Tests:** typecheck + lint pass

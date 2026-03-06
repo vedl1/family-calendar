@@ -1,1 +1,29 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# native builds
+ios/
+android/
+
+# environment variables
 .env.local
+.env*.local
+
+# test results
+coverage/
+node_modules/.vite/
+
+# OS
+.DS_Store
+*.pem
+
+# misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -180,6 +180,46 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+## 2026-03-08 — Factory — VCH-45
+**Completed:** Created `lib/events.ts` with all 7 exported functions: `createEvent`, `getEvents`, `updateEvent`, `deleteEvent`, `upsertRSVP`, `removeRSVP`, `subscribeToEvents`.
+**Decisions made:**
+- `createEvent` accepts `start_at`/`end_at` ISO datetime strings and maps them to DB columns `event_date`, `start_time`, `duration_mins` (parsed via UTC Date methods).
+- `getEvents` uses Supabase embedded joins: `creator:users!created_by(...)` and `rsvps(*, user:users!user_id(...))` to produce `EventWithMeta[]` in a single query, filtered by `event_date` range with `.gte()`/`.lte()`.
+- `upsertRSVP` / `removeRSVP` fetch the current auth user via `supabase.auth.getUser()` and throw if not authenticated.
+- `subscribeToEvents` uses `postgres_changes` with `event: '*'` and `filter: group_id=eq.{groupId}` on a named channel.
+- `deleteEvent` is a hard delete; RLS enforces permissions at DB level.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { createEvent, getEvents, ... } from '@/lib/events'`
+- `getEvents` returns `EventWithMeta[]` with nested `creator` and `rsvps[].user` already populated.
+- `subscribeToEvents` returns a `RealtimeChannel` — caller must call `.unsubscribe()` on cleanup.
+**Open questions:** None
+**Tests:** Passing (58 tests; typecheck + lint + vitest all exit 0)
+
+---
+
+## 2026-03-08 — Factory — VCH-46
+**Completed:** Created `hooks/useEvents.ts` exporting the `useEvents(groupId)` hook with the full specified interface.
+**Decisions made:**
+- Fetches events for the current calendar month on mount via `getMonthRange()` helper (computes first/last day of current month as YYYY-MM-DD strings).
+- `groupId: null` → returns empty state immediately (no fetch, no subscription).
+- Two separate effects: (1) fetches events on `groupId` change; (2) subscribes to realtime updates via `subscribeToEvents`, re-fetches on any change event, and unsubscribes on cleanup.
+- `upsertRSVP` and `removeRSVP` apply optimistic local state updates before the async call; on failure, re-fetch events to revert.
+- `useCallback` used on all action functions for referential stability.
+- `groupIdRef` carries the latest groupId into async callbacks without causing re-renders.
+- All actions set `error` state on failure and re-throw for caller handling (same pattern as `useGroup`).
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { useEvents } from '@/hooks/useEvents'`
+- `events` contains `EventWithMeta[]` for the current calendar month; re-fetched on realtime changes.
+- RSVP actions are optimistic — UI updates instantly, reverts on server error.
+**Open questions:** None
+**Tests:** Passing (58 tests; typecheck + lint + vitest all exit 0)
+
+---
+
 ## 2026-03-06 — Codex — VCH-44
 **Completed:** Created `tests/unit/groups/groups.test.ts` (21 tests) covering `lib/groups.ts` functions and the `isAdmin` derivation in `hooks/useGroup.ts`.
 **Decisions made:**

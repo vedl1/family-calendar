@@ -15,14 +15,22 @@ import { supabase } from '@/lib/supabase';
 
 /**
  * Generate a new share link for a group.
- * Token is a UUID generated client-side. No expiry by default.
+ * Token is a UUID generated client-side. No expiry by default (REQ-27).
  */
-export async function generateShareLink(groupId: string): Promise<ShareLink> {
+export async function generateShareLink(
+  groupId: string,
+  expiresAt?: string,
+): Promise<ShareLink> {
   const token = randomUUID();
 
   const { data, error } = await supabase
     .from('share_links')
-    .insert({ group_id: groupId, token, expires_at: null, revoked: false })
+    .insert({
+      group_id: groupId,
+      token,
+      expires_at: expiresAt ?? null,
+      revoked: false,
+    })
     .select()
     .single();
 

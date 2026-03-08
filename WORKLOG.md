@@ -220,6 +220,24 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+## 2026-03-08 — Factory — VCH-48
+**Completed:** Created `lib/shareLinks.ts` with 4 exported functions: `generateShareLink`, `revokeShareLink`, `validateShareLink`, `getShareLinksForGroup`.
+**Decisions made:**
+- `generateShareLink`: uses `randomUUID()` from `expo-crypto` (already a project dependency) for client-side token generation; inserts with `expires_at: null` and `revoked: false`.
+- `validateShareLink`: fetches by token via `.single()`, then checks `revoked` and `expires_at` in application code — throws descriptive errors for each invalid state.
+- `revokeShareLink`: sets `revoked = true` on the row matched by `id`.
+- `getShareLinksForGroup`: returns all links for a group ordered by `created_at` descending.
+**Contracts changed:** No
+**Dependencies introduced:** None (`expo-crypto` already in package.json)
+**Next agent needs to know:**
+- Import: `import { generateShareLink, revokeShareLink, validateShareLink, getShareLinksForGroup } from '@/lib/shareLinks'`
+- `validateShareLink` throws `'This share link has been revoked'` or `'This share link has expired'` — callers can catch and display these messages.
+- `joinGroupByInviteLink(token)` in `lib/groups.ts` performs its own validation; `validateShareLink` is for UI-level pre-checks.
+**Open questions:** None
+**Tests:** Passing (58 tests; typecheck + lint + vitest all exit 0)
+
+---
+
 ## 2026-03-06 — Codex — VCH-44
 **Completed:** Created `tests/unit/groups/groups.test.ts` (21 tests) covering `lib/groups.ts` functions and the `isAdmin` derivation in `hooks/useGroup.ts`.
 **Decisions made:**

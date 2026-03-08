@@ -256,6 +256,23 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+## 2026-03-08 — Factory — join-group-hook
+**Completed:** Created `hooks/useJoinGroup.ts` exporting the `useJoinGroup()` hook.
+**Decisions made:**
+- Wraps `joinGroupByInviteLink(token)` from `@/lib/groups` with loading/error state management.
+- `useCallback` for referential stability on the `join` function.
+- Sets `error` on failure and re-throws so callers can also handle (consistent with other hooks).
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { useJoinGroup } from '@/hooks/useJoinGroup'`
+- Used by `app/(app)/groups/join.tsx`.
+- `join(token)` throws on failure; `error` state also set for UI display.
+**Open questions:** None
+**Tests:** Passing (58 tests; typecheck + lint + vitest all exit 0)
+
+---
+
 ## 2026-03-06 — Codex — VCH-44
 **Completed:** Created `tests/unit/groups/groups.test.ts` (21 tests) covering `lib/groups.ts` functions and the `isAdmin` derivation in `hooks/useGroup.ts`.
 **Decisions made:**

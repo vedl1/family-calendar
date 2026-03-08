@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { GroupMember } from '@/contracts/types';
+import type { GroupMember, User } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { GroupMustHaveAdminError } from '@/lib/groups';
 
-type MemberWithUser = GroupMember & { user: { id: string; display_name: string | null; avatar_url: string | null } };
+type MemberWithUser = GroupMember & { user: User };
 
 /**
  * VCH-14: Admin role management.

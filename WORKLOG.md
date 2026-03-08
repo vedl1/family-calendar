@@ -238,6 +238,24 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+## 2026-03-08 — Factory — VCH-share-link-hook
+**Completed:** Created `hooks/useShareLink.ts` exporting the `useShareLink(token)` hook.
+**Decisions made:**
+- Calls `validateShareLink(token)` from `@/lib/shareLinks` on mount; sets `isValid: true` only on success.
+- `token: null` → returns empty state immediately (no fetch).
+- Uses `cancelled` flag pattern (consistent with `useGroup`/`useEvents`) to prevent stale state on unmount.
+- Error messages from `validateShareLink` (revoked / expired) are surfaced directly in `error`.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { useShareLink } from '@/hooks/useShareLink'`
+- Used by `app/share/[token].tsx` — the unauthenticated share link screen.
+- `isValid` is `false` until validation succeeds; check `error` for the reason.
+**Open questions:** None
+**Tests:** Passing (58 tests; typecheck + lint + vitest all exit 0)
+
+---
+
 ## 2026-03-06 — Codex — VCH-44
 **Completed:** Created `tests/unit/groups/groups.test.ts` (21 tests) covering `lib/groups.ts` functions and the `isAdmin` derivation in `hooks/useGroup.ts`.
 **Decisions made:**

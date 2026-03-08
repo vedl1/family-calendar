@@ -251,3 +251,23 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Next agent needs to know:** All group tests pass; 58 total tests (25 lib/auth + 12 useAuth + 21 groups).
 **Open questions:** None
 **Tests:** 58 passed (21 groups + 37 existing) — typecheck + lint + vitest all exit 0
+
+---
+
+## 2026-03-08 — Codex — VCH-47
+**Completed:** Added real Supabase-backed integration tests for the events module at `tests/integration/events.test.ts` and added `test:integration` script in `package.json`.
+**Decisions made:**
+- Implemented a local Supabase test helper that uses a service-role client for DB seed/cleanup and anon clients for authenticated calls to `lib/events.ts` functions.
+- Used two auth sessions plus an outsider session (`creator`, `member`, `outsider`) to validate RLS-sensitive behavior.
+- Created test users via anon `signUp` + service-role profile upsert to avoid relying on `auth.admin.createUser` in local key configurations.
+- Added robust local key resolution for Docker Supabase (`supabase status -o env` fallback plus documented defaults).
+- Kept permission-negative delete assertion aligned with current behavior (event remains; RLS may return zero-row delete without throwing).
+- Added explicit test-file header note that `supabase start` must be running before execution.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Integration tests call `lib/events.ts` directly (no Supabase mocks).
+- Test command: `npm run test:integration`.
+- The test helper cleans all created rows in `afterEach`/`afterAll`.
+**Open questions:** None
+**Tests:** Passing — `npm run typecheck && npm run lint && npm run test && npm run test:integration`

@@ -238,6 +238,24 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+## 2026-03-08 — Factory — VCH-share-link-hook
+**Completed:** Created `hooks/useShareLink.ts` exporting the `useShareLink(token)` hook.
+**Decisions made:**
+- Calls `validateShareLink(token)` from `@/lib/shareLinks` on mount; sets `isValid: true` only on success.
+- `token: null` → returns empty state immediately (no fetch).
+- Uses `cancelled` flag pattern (consistent with `useGroup`/`useEvents`) to prevent stale state on unmount.
+- Error messages from `validateShareLink` (revoked / expired) are surfaced directly in `error`.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { useShareLink } from '@/hooks/useShareLink'`
+- Used by `app/share/[token].tsx` — the unauthenticated share link screen.
+- `isValid` is `false` until validation succeeds; check `error` for the reason.
+**Open questions:** None
+**Tests:** Passing (58 tests; typecheck + lint + vitest all exit 0)
+
+---
+
 ## 2026-03-06 — Codex — VCH-44
 **Completed:** Created `tests/unit/groups/groups.test.ts` (21 tests) covering `lib/groups.ts` functions and the `isAdmin` derivation in `hooks/useGroup.ts`.
 **Decisions made:**
@@ -255,19 +273,18 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 ---
 
 ## 2026-03-08 — Codex — VCH-47
-**Completed:** Added real Supabase-backed integration tests for the events module at `tests/integration/events.test.ts` and added `test:integration` script in `package.json`.
+**Completed:** Added real integration coverage for the events module in `tests/integration/events.test.ts` using a local Docker Supabase instance (no Supabase mocks).
 **Decisions made:**
-- Implemented a local Supabase test helper that uses a service-role client for DB seed/cleanup and anon clients for authenticated calls to `lib/events.ts` functions.
-- Used two auth sessions plus an outsider session (`creator`, `member`, `outsider`) to validate RLS-sensitive behavior.
-- Created test users via anon `signUp` + service-role profile upsert to avoid relying on `auth.admin.createUser` in local key configurations.
-- Added robust local key resolution for Docker Supabase (`supabase status -o env` fallback plus documented defaults).
-- Kept permission-negative delete assertion aligned with current behavior (event remains; RLS may return zero-row delete without throwing).
-- Added explicit test-file header note that `supabase start` must be running before execution.
+- Built a local test helper that uses service-role for seeding/cleanup and anon auth sessions for calling `lib/events.ts` functions under test.
+- Seeded three users per test context (`creator`, `member`, `outsider`) to validate both allowed and RLS-denied paths.
+- Created test auth users via anon `signUp` flow and seeded corresponding `public.users` rows via service-role to keep joins deterministic.
+- Added local key resolution via `supabase status -o env` fallback to support local Supabase key variants.
+- For delete permissions, asserted protected-row persistence for non-member delete attempt (current function/policy behavior) while still validating access control.
 **Contracts changed:** No
 **Dependencies introduced:** None
 **Next agent needs to know:**
-- Integration tests call `lib/events.ts` directly (no Supabase mocks).
-- Test command: `npm run test:integration`.
-- The test helper cleans all created rows in `afterEach`/`afterAll`.
+- Integration tests call `lib/events.ts` directly and require `supabase start` running locally.
+- Script added: `npm run test:integration`.
+- Cleanup runs in `afterEach`/`afterAll` for created groups and user rows.
 **Open questions:** None
 **Tests:** Passing — `npm run typecheck && npm run lint && npm run test && npm run test:integration`

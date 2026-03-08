@@ -134,3 +134,46 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Next agent needs to know:** Sign-in route is `/sign-in`. Root index (`/`) should handle post-auth (e.g. redirect unauthenticated users to `/sign-in`).
 **Open questions:** None
 **Tests:** typecheck + lint pass
+
+---
+
+## 2026-03-06 — Factory (Claude Code) — VCH-42
+**Completed:** Created `lib/groups.ts` with all 10 required exported functions plus the `GroupMustHaveAdminError` custom error class.
+**Decisions made:**
+- `createGroup`: plain INSERT into `groups`; DB trigger (trg_group_created) handles the admin membership row — no manual insert into group_members.
+- `getGroupsForUser`: queries `group_members` with `groups!inner(*)` (Supabase inner-join syntax) filtered to `status='active'`, maps to `Group[]`. Cast via `unknown` to avoid Supabase's untyped array inference on join columns.
+- `inviteMember`: detects email vs E.164 phone by presence of `@`; looks up user in `users` table, inserts a `pending` membership row.
+- `demoteMember`: counts active admins with `{ count: 'exact', head: true }` before the UPDATE; throws `GroupMustHaveAdminError` if count === 1.
+- `joinGroupByInviteLink`: validates `revoked` and `expires_at` on the share_link row, then upserts the membership with `onConflict: 'group_id,user_id'` (handles re-joining after removal).
+- `getMembers`: selects `*, users(*)` and remaps the `users` key → `user` to match the contract type `(GroupMember & { user: User })[]`.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { createGroup, getGroupsForUser, inviteMember, ... } from '@/lib/groups'`
+- `GroupMustHaveAdminError` is exported for callers to catch specifically.
+- `approveMember`/`rejectMember` filter on `status='pending'`; calling them on non-pending rows is a no-op (Supabase returns no error).
+**Open questions:** None
+**Tests:** Passing (typecheck + lint + vitest all exit 0)
+
+---
+
+## 2026-03-06 — Factory (Claude Code) — VCH-43
+**Completed:** Created `hooks/useGroup.ts` exporting the `useGroup()` hook with the full specified interface.
+**Decisions made:**
+- AsyncStorage key `activeGroupId` stores the persisted group ID. On mount, groups are fetched then the stored ID is matched; falls back to `groups[0]` if stored ID is not found.
+- Two separate effects: (1) loads groups + restores activeGroup on `user.id` change; (2) loads members on `activeGroup.id` change. A `useRef` (`groupsRef`) carries the latest `groups` value into effect 2 without adding it as a dep (avoids infinite re-fetch loop).
+- Both effects use a `cancelled` flag to discard results after unmount/re-run (prevents stale state).
+- `isAdmin` is derived (not stored) — `members.some(m => m.user_id === user.id && m.role === 'admin' && m.status === 'active')`.
+- `setActiveGroup` is synchronous per spec; AsyncStorage write is fire-and-forget.
+- `removeMember`: if the caller removes themselves (userId === user.id), immediately removes the group from the list and switches to the next available group (or null).
+- All action functions set `error` state on failure and re-throw so callers can also catch.
+- `// eslint-disable-next-line react-hooks/exhaustive-deps` used on the two effects where intentional dep omissions are documented inline.
+**Contracts changed:** No
+**Dependencies introduced:** None (AsyncStorage already in package.json from VCH-39)
+**Next agent needs to know:**
+- Import: `import { useGroup } from '@/hooks/useGroup'`
+- `members` contains the full `(GroupMember & { user: User })[]` shape; no separate fetch needed.
+- `error` is the last error string; callers should display it and can rely on the thrown error for their own try/catch.
+- `inviteMember` takes a single `emailOrPhone` string scoped to the current `activeGroup`.
+**Open questions:** None
+**Tests:** Passing (37 tests: 25 lib/auth + 12 useAuth; typecheck + lint + vitest all exit 0)

@@ -177,3 +177,19 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - `inviteMember` takes a single `emailOrPhone` string scoped to the current `activeGroup`.
 **Open questions:** None
 **Tests:** Passing (37 tests: 25 lib/auth + 12 useAuth; typecheck + lint + vitest all exit 0)
+
+---
+
+## 2026-03-06 — Codex — VCH-44
+**Completed:** Created `tests/unit/groups/groups.test.ts` (21 tests) covering `lib/groups.ts` functions and the `isAdmin` derivation in `hooks/useGroup.ts`.
+**Decisions made:**
+- Used a `buildChain(result)` helper that returns a fully chainable Supabase mock (all builder methods return `chain`, `.single()` and `await` resolve to `result`). This cleanly handles all query shapes — inserts, updates, count queries, inner joins — without per-function chain scaffolding.
+- `demoteMember` two-call scenario handled via `mockReturnValueOnce` on `mockFromChain` — first call returns the count chain, second returns the update chain.
+- `inviteMember` similarly uses two `mockReturnValueOnce` calls: user lookup chain, then insert chain.
+- `useGroup.isAdmin` tests use the same `stateConfig.overrides` pattern as `useAuth.test.ts`: override the 3rd `useState` call (index 2, the `members` slot) to inject specific member arrays; `user` is controlled via the `useAuth` mock.
+- Rebased onto `origin/develop` to pick up `lib/groups.ts` + `hooks/useGroup.ts` from the merged PR #14 (VCH-42/VCH-43) before writing tests.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:** All group tests pass; 58 total tests (25 lib/auth + 12 useAuth + 21 groups).
+**Open questions:** None
+**Tests:** 58 passed (21 groups + 37 existing) — typecheck + lint + vitest all exit 0

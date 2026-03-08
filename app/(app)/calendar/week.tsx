@@ -197,7 +197,7 @@ export default function WeekViewScreen() {
                   key={event.id}
                   event={event}
                   onPress={() =>
-                    router.push(`/calendar/event/${event.id}`)
+                    router.push(`/event/${event.id}`)
                   }
                 />
               ))}

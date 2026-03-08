@@ -129,7 +129,7 @@ export default function AgendaScreen() {
                 <AgendaRow
                   key={event.id}
                   event={event}
-                  onPress={() => router.push(`/calendar/event/${event.id}`)}
+                  onPress={() => router.push(`/event/${event.id}`)}
                 />
               ))}
             </View>

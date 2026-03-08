@@ -89,6 +89,25 @@ export async function getEvents(
 }
 
 /**
+ * Fetch a single event by id (with creator and rsvps).
+ * RLS allows select if the current user is an active member of the event's group.
+ */
+export async function getEvent(eventId: string): Promise<EventWithMeta | null> {
+  const { data, error } = await supabase
+    .from('events')
+    .select(`
+      *,
+      creator:users!created_by(id, display_name, avatar_url),
+      rsvps(*, user:users!user_id(id, display_name, avatar_url))
+    `)
+    .eq('id', eventId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as unknown as EventWithMeta | null;
+}
+
+/**
  * Update an existing event. Only the provided fields are changed.
  */
 export async function updateEvent(

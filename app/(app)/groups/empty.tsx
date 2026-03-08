@@ -14,7 +14,7 @@ export default function EmptyStateScreen() {
         No groups yet
       </Text>
       <Text className="text-slate-500 text-base mb-8">
-        Create your first family group to start sharing events.
+        Create a new family group or join one with an invite link.
       </Text>
       <TouchableOpacity
         onPress={() => router.push('/groups/create')}
@@ -22,6 +22,14 @@ export default function EmptyStateScreen() {
       >
         <Text className="text-white font-medium text-base">
           Create your first group
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.push('/groups/join')}
+        className="mt-3 h-12 border border-slate-300 bg-white rounded-xl items-center justify-center active:opacity-80"
+      >
+        <Text className="text-slate-700 font-medium text-base">
+          Join with an invite link
         </Text>
       </TouchableOpacity>
     </View>

@@ -60,7 +60,10 @@ export default function AgendaScreen() {
   const { events, isLoading, error } = useEvents(groupId);
 
   const eventsByDate = useMemo(() => {
-    const sorted = [...events].sort((a, b) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const sorted = [...events]
+      .filter((e) => e.event_date >= today)
+      .sort((a, b) => {
       const dateCmp = a.event_date.localeCompare(b.event_date);
       if (dateCmp !== 0) return dateCmp;
       return (a.start_time || '').localeCompare(b.start_time || '');

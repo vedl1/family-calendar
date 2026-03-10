@@ -443,3 +443,18 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Token cleanup happens automatically on unmount/token change.
 **Open questions:** None
 **Tests:** Passing (58 unit tests; typecheck + lint exit 0)
+
+---
+
+## 2026-03-10 — Cursor — VCH-27, VCH-29, VCH-34
+**Completed:** VCH-27: Replaced event edit stub with full form in `app/(app)/event/edit/[id].tsx` — same layout/fields as create, pre-filled via getEvent(id); updateEvent(id, params) with DB columns (event_date, start_time, duration_mins, etc.); canEdit guard (creator or isAdmin); loading spinner; "You don't have permission" when !canEdit. VCH-29 + VCH-34: Added `app/(app)/groups/share-links.tsx` — list of non-revoked share links (token truncated, expiry or "No expiry", Revoke with Alert.alert confirm); "Generate link" button (optional "Set expiry" toggle + YYYY-MM-DD → generate(expiresAt)); full deep link shown below each row (family-calendar://groups/join?token=…); red error banner; loading states; "No active share links" empty state.
+**Decisions made:**
+- Edit form converts event.start_time (HH:MM:SS) to HH:MM for input; on submit sends back with ":00" suffix.
+- Share-links screen uses useShareLinks(groupId); expiry passed to generate() as ISO string when "Set expiry" is on and date valid.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Route: `/event/edit/[id]`, `/groups/share-links`. Add nav to share-links from groups index (e.g. "Share links" button) if desired.
+- Event edit: updateEvent signature is (eventId, Partial<Event minus id/group_id/created_by/created_at>).
+**Open questions:** None
+**Tests:** typecheck + lint pass

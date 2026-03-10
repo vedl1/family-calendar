@@ -18,6 +18,7 @@ import {
   updateEvent as libUpdateEvent,
   deleteEvent as libDeleteEvent,
   getEvents,
+  getEvent as libGetEvent,
   upsertRSVP as libUpsertRSVP,
   removeRSVP as libRemoveRSVP,
   subscribeToEvents,
@@ -27,6 +28,7 @@ export interface EventsState {
   events: EventWithMeta[];
   isLoading: boolean;
   error: string | null;
+  getEvent: (eventId: string) => Promise<EventWithMeta | null>;
   createEvent: (params: {
     group_id: string;
     title: string;
@@ -117,6 +119,17 @@ export function useEvents(groupId: string | null): EventsState {
   }, [groupId]);
 
   // ── Actions ───────────────────────────────────────────────────────────
+
+  const getEvent = useCallback(async (eventId: string): Promise<EventWithMeta | null> => {
+    try {
+      setError(null);
+      return await libGetEvent(eventId);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to load event';
+      setError(msg);
+      throw e;
+    }
+  }, []);
 
   const createEvent = useCallback(async (params: {
     group_id: string;
@@ -237,6 +250,7 @@ export function useEvents(groupId: string | null): EventsState {
     events,
     isLoading,
     error,
+    getEvent,
     createEvent,
     updateEvent,
     deleteEvent,

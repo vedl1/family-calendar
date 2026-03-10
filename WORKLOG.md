@@ -305,3 +305,21 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Cleanup runs in `afterEach`/`afterAll` for created groups and user rows.
 **Open questions:** None
 **Tests:** Passing — `npm run typecheck && npm run lint && npm run test && npm run test:integration`
+
+---
+
+## 2026-03-09 — Cursor — VCH-23, VCH-24
+**Completed:** Auth guard in app (app) layout; create event form at `/event/create`; event detail screen at `/event/[id]`; stub `/event/edit/[id]`. All (app) screens redirect to `/sign-in` when unauthenticated. Create form uses `createEvent()` from `useEvents(groupId)`; detail uses `getEvent(id)`, `upsertRSVP`, `deleteEvent` from same hook. Edit/delete shown only when `user.id === event.created_by || isAdmin` (useGroup for isAdmin). Week and agenda links updated to `/event/[id]`.
+**Decisions made:**
+- Added `getEvent(eventId)` to `lib/events.ts` (single-event fetch with creator + rsvps join) and exposed it on `useEvents` so event detail uses the hook only (no direct Supabase in UI).
+- Event detail loads via `getEvent(id)` in useEffect; RSVP and delete actions update local state or refetch as appropriate.
+- Create form builds `start_at`/`end_at` from date + start time + duration and passes to existing `createEvent` API (ISO strings).
+- Edit screen is a stub (Back + “Edit form coming in follow-up”) so the Edit button has a valid route; full edit form can be added later.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Routes: `/event/create`, `/event/[id]`, `/event/edit/[id]`. Calendar week/agenda navigate to `/event/[id]`.
+- Event detail shows “No location set” when `location` is null; “This event has passed” and RSVP disabled when `event_date < today`.
+- To add full event edit: implement form in `app/(app)/event/edit/[id].tsx` using `useEvents(groupId).updateEvent(eventId, params)` and same field set as create (title, description, importance, date, time, duration, location).
+**Open questions:** None
+**Tests:** typecheck + lint pass

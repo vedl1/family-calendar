@@ -496,6 +496,7 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+
 ## 2026-03-10 — Cursor — Navigation polish, OTP resend, pending approvals
 **Completed:** Groups index: "View calendar" button at top of actions (above Create another group), primary style (bg-slate-900, white text), only when activeGroup is set; navigates to /calendar/week. Calendar: floating "+" FAB bottom-right on week.tsx and agenda.tsx, navigates to /event/create; content wrapped in relative View. Members: "Pending approval" section above Active (admins only, when pending members exist); each row has display_name, Approve (green), Reject (red/outline); approveMember/rejectMember from @/lib/groups; refetchMembers from useGroup after success; per-row loading. useGroup: added refetchMembers() to refresh members after approve/reject. Sign-in: OTP step has "Resend code" with 30s cooldown (countdown state, setInterval decrement); disabled text "Resend code (Xs)" while countdown > 0; active TouchableOpacity when 0; on press calls handleSendOTP (resets countdown to 30); placed below "Use a different number". Used globalThis.setInterval/clearInterval for lint.
 **Decisions made:**

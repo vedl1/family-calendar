@@ -227,7 +227,11 @@ function PendingApprovalRow({
           disabled={loading}
           className="px-3 py-1.5 border border-red-500 rounded-lg"
         >
-          <Text className="text-red-600 text-sm font-medium">Reject</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="#ef4444" />
+          ) : (
+            <Text className="text-red-600 text-sm font-medium">Reject</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

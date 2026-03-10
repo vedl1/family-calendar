@@ -305,3 +305,24 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Cleanup runs in `afterEach`/`afterAll` for created groups and user rows.
 **Open questions:** None
 **Tests:** Passing — `npm run typecheck && npm run lint && npm run test && npm run test:integration`
+
+---
+
+## 2026-03-10 — Factory — VCH-48
+**Completed:** Created `hooks/useShareLinks.ts` exporting the `useShareLinks(groupId)` hook with the full specified interface (`ShareLinksState`).
+**Decisions made:**
+- Fetches links via `getShareLinksForGroup(groupId)` on mount and when `groupId` changes; uses a `cancelled` flag to prevent stale state on unmount (same pattern as `useGroup` / `useEvents`).
+- `groupId: null` → returns empty `links: []` immediately with no fetch.
+- `generate(expiresAt?)` calls `generateShareLink(groupId, expiresAt)` then refreshes the full list via `getShareLinksForGroup`.
+- `revoke(linkId)` calls `revokeShareLink(linkId)` then refreshes the full list.
+- Both actions use `useCallback` with `[groupId]` deps for referential stability.
+- Both actions set `error` state on failure and re-throw for caller handling (consistent with all other hooks).
+- Error messages follow the `e instanceof Error ? e.message : 'Failed to ...'` pattern used project-wide.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { useShareLinks } from '@/hooks/useShareLinks'`
+- `links` contains `ShareLink[]` for the given group; refreshed after generate/revoke.
+- `generate` and `revoke` throw on failure; `error` state also set for UI display.
+**Open questions:** None
+**Tests:** Passing (58 unit tests; typecheck + lint exit 0; integration tests skipped — require local Supabase)

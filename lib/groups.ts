@@ -208,16 +208,28 @@ export async function joinGroupByInviteLink(token: string): Promise<void> {
     throw new Error('This invite link has expired');
   }
 
-  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-  if (authError) throw authError;
-  if (!authUser) throw new Error('Not authenticated');
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+  if (!session?.user) throw new Error('Not authenticated');
 
-  const { error } = await supabase
+  const membership = {
+    group_id: link.group_id,
+    user_id: session.user.id,
+    role: 'member' as const,
+    status: 'active' as const,
+  };
+
+  const { error: insertError } = await supabase.from('group_members').insert(membership);
+  if (!insertError) return;
+
+  // Idempotent re-join path: existing membership row, ensure it is active.
+  if (insertError.code !== '23505') throw insertError;
+
+  const { error: updateError } = await supabase
     .from('group_members')
-    .upsert(
-      { group_id: link.group_id, user_id: authUser.id, role: 'member', status: 'active' },
-      { onConflict: 'group_id,user_id' },
-    );
+    .update({ status: 'active' })
+    .eq('group_id', link.group_id)
+    .eq('user_id', session.user.id);
 
-  if (error) throw error;
+  if (updateError) throw updateError;
 }

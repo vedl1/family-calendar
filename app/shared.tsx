@@ -2,18 +2,16 @@ import { useMemo } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { EventWithMeta, Importance } from '@/contracts/types';
-import { useGroup } from '@/hooks/useGroup';
-import { useEvents } from '@/hooks/useEvents';
+import { useShareLink } from '@/hooks/useShareLink';
+import { useSharedCalendar } from '@/hooks/useSharedCalendar';
 import { ImportanceShape } from '@/components/ImportanceShape';
 
-/** Format start_time "HH:MM:SS" as "H:MM am/pm". */
 function formatTime(startTime: string | null): string {
   if (!startTime) return 'All day';
   const [h, m] = startTime.split(':').map(Number);
@@ -23,7 +21,6 @@ function formatTime(startTime: string | null): string {
   return `${h}:${String(m).padStart(2, '0')} am`;
 }
 
-/** Format duration_mins as "30 min" or "1 hr 30 min". */
 function formatDuration(mins: number | null): string {
   if (mins == null || mins <= 0) return '';
   if (mins < 60) return `${mins} min`;
@@ -32,7 +29,6 @@ function formatDuration(mins: number | null): string {
   return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
 }
 
-/** Format event_date "YYYY-MM-DD" as "Mon, Mar 10" for section headers. */
 function formatDateHeader(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00');
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -41,27 +37,28 @@ function formatDateHeader(dateStr: string): string {
 }
 
 /**
- * VCH-21 / REQ-24: Agenda / list view.
- * Events in chronological order (upcoming first), grouped by date.
- * useEvents(groupId) + useGroup(); no direct Supabase.
+ * VCH-32: Read-only shared calendar (public, no auth).
+ * Token from URL; validate via useShareLink; events via useSharedCalendar.
+ * Agenda-style list, future events only, no RSVP.
  */
-export default function AgendaScreen() {
-  const router = useRouter();
-  const { activeGroup } = useGroup();
-  const groupId = activeGroup?.id ?? null;
-  const { events, isLoading, error } = useEvents(groupId);
+export default function SharedCalendarScreen() {
+  const { token: tokenParam } = useLocalSearchParams<{ token?: string }>();
+  const token = tokenParam ?? null;
+
+  const { isValid, isLoading: isValidating } = useShareLink(token);
+  const { events, isLoading: eventsLoading, error } = useSharedCalendar(token);
 
   const eventsByDate = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
-    const sorted = [...events]
+    const filtered = events
       .filter((e) => e.event_date >= today)
       .sort((a, b) => {
-      const dateCmp = a.event_date.localeCompare(b.event_date);
-      if (dateCmp !== 0) return dateCmp;
-      return (a.start_time || '').localeCompare(b.start_time || '');
-    });
+        const dateCmp = a.event_date.localeCompare(b.event_date);
+        if (dateCmp !== 0) return dateCmp;
+        return (a.start_time || '').localeCompare(b.start_time || '');
+      });
     const map: Record<string, EventWithMeta[]> = {};
-    sorted.forEach((evt) => {
+    filtered.forEach((evt) => {
       if (!map[evt.event_date]) map[evt.event_date] = [];
       map[evt.event_date].push(evt);
     });
@@ -69,13 +66,12 @@ export default function AgendaScreen() {
   }, [events]);
 
   const dateKeys = useMemo(() => Object.keys(eventsByDate).sort(), [eventsByDate]);
+  const isLoading = isValidating || eventsLoading;
 
-  if (!groupId) {
+  if (!token) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
-        <Text className="text-slate-500 text-center">
-          Select a group to view the calendar.
-        </Text>
+        <Text className="text-slate-500 text-center">No share token provided.</Text>
       </SafeAreaView>
     );
   }
@@ -84,7 +80,17 @@ export default function AgendaScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
         <ActivityIndicator size="large" className="text-slate-600" />
-        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
+        <Text className="mt-3 text-slate-500 text-base">Loading…</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (!isValid) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+        <Text className="text-slate-500 text-center">
+          This link is invalid or has expired.
+        </Text>
       </SafeAreaView>
     );
   }
@@ -92,21 +98,7 @@ export default function AgendaScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
-        <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
-          <TouchableOpacity
-            onPress={() => router.replace('/calendar/week')}
-            className="flex-1 py-1.5 rounded-lg items-center"
-          >
-            <Text className="text-slate-500 font-medium text-sm">Week</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {}}
-            className="flex-1 py-1.5 rounded-lg items-center bg-slate-900"
-          >
-            <Text className="text-white font-medium text-sm">Agenda</Text>
-          </TouchableOpacity>
-        </View>
-        <Text className="text-xl font-semibold text-slate-900">Agenda</Text>
+        <Text className="text-xl font-semibold text-slate-900">Shared calendar</Text>
       </View>
 
       {error ? (
@@ -132,11 +124,7 @@ export default function AgendaScreen() {
                 {formatDateHeader(dateStr)}
               </Text>
               {(eventsByDate[dateStr] ?? []).map((event) => (
-                <AgendaRow
-                  key={event.id}
-                  event={event}
-                  onPress={() => router.push(`/event/${event.id}`)}
-                />
+                <SharedEventRow key={event.id} event={event} />
               ))}
             </View>
           ))}
@@ -146,24 +134,14 @@ export default function AgendaScreen() {
   );
 }
 
-function AgendaRow({
-  event,
-  onPress,
-}: {
-  event: EventWithMeta;
-  onPress: () => void;
-}) {
+function SharedEventRow({ event }: { event: EventWithMeta }) {
   const timeStr = formatTime(event.start_time);
   const durationStr = formatDuration(event.duration_mins);
   const timeAndDuration =
     durationStr ? `${timeStr} · ${durationStr}` : timeStr;
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      className="flex-row items-center py-3 border-b border-slate-100"
-    >
+    <View className="flex-row items-center py-3 border-b border-slate-100">
       <View className="w-6 items-center justify-center">
         <ImportanceShape importance={event.importance as Importance} size={14} />
       </View>
@@ -175,6 +153,6 @@ function AgendaRow({
           {timeAndDuration}
         </Text>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }

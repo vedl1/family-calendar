@@ -10,7 +10,7 @@ import EmptyStateScreen from './empty';
  */
 export default function GroupsIndexScreen() {
   const router = useRouter();
-  const { groups, isLoading, error, activeGroup } = useGroup();
+  const { groups, isLoading, error, activeGroup, isAdmin } = useGroup();
 
   if (isLoading) {
     return (
@@ -61,12 +61,22 @@ export default function GroupsIndexScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => router.push('/groups/members')}
-          className="h-12 border border-slate-300 rounded-xl items-center justify-center"
+          className="h-12 border border-slate-300 rounded-xl items-center justify-center mb-3"
         >
           <Text className="text-slate-700 font-medium text-base">
             Manage members
           </Text>
         </TouchableOpacity>
+        {isAdmin ? (
+          <TouchableOpacity
+            onPress={() => router.push('/groups/share-links')}
+            className="h-12 border border-slate-300 rounded-xl items-center justify-center"
+          >
+            <Text className="text-slate-700 font-medium text-base">
+              Share links
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </SafeAreaView>
   );

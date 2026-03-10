@@ -31,9 +31,26 @@ export default function SignInScreen() {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingPhone, setLoadingPhone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Start 30s countdown when entering OTP step.
+  useEffect(() => {
+    if (!otpSent) return;
+    setResendCountdown(30);
+  }, [otpSent]);
+
+  // Decrement countdown every second.
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const id = globalThis.setInterval(
+      () => setResendCountdown((c) => (c <= 1 ? 0 : c - 1)),
+      1000,
+    );
+    return () => globalThis.clearInterval(id);
+  }, [resendCountdown]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) router.replace('/');
@@ -77,6 +94,7 @@ export default function SignInScreen() {
       await sendOTP(trimmed);
       setOtpSent(true);
       setOtp('');
+      setResendCountdown(30);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to send code');
     } finally {
@@ -226,6 +244,21 @@ export default function SignInScreen() {
                     Use a different number
                   </Text>
                 </TouchableOpacity>
+                {resendCountdown > 0 ? (
+                  <Text className="text-slate-400 text-sm text-center mt-2">
+                    Resend code ({resendCountdown}s)
+                  </Text>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleSendOTP}
+                    disabled={loadingPhone}
+                    className="py-2 mt-2"
+                  >
+                    <Text className="text-slate-600 text-sm text-center font-medium">
+                      Resend code
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </>
             )}
           </View>

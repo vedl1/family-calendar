@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { GroupMember, User } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
-import { GroupMustHaveAdminError } from '@/lib/groups';
+import { approveMember, rejectMember, GroupMustHaveAdminError } from '@/lib/groups';
 
 type MemberWithUser = GroupMember & { user: User };
 
@@ -29,6 +29,7 @@ export default function MembersScreen() {
     promoteMember,
     demoteMember,
     removeMember,
+    refetchMembers,
     error,
   } = useGroup();
 
@@ -114,7 +115,26 @@ export default function MembersScreen() {
             </View>
           ) : null}
 
-          <Text className="text-slate-600 font-medium text-sm mb-2">Active</Text>
+          {isAdmin && pendingMembers.length > 0 ? (
+            <>
+              <Text className="text-slate-600 font-medium text-sm mb-2">
+                Pending approval
+              </Text>
+              {pendingMembers.map((member) => (
+                <PendingApprovalRow
+                  key={member.id}
+                  member={member}
+                  groupId={activeGroup.id}
+                  actionLoading={actionLoading}
+                  setActionLoading={setActionLoading}
+                  setBannerMessage={setBannerMessage}
+                  onSuccess={refetchMembers}
+                />
+              ))}
+            </>
+          ) : null}
+
+          <Text className="text-slate-600 font-medium text-sm mb-2 mt-4">Active</Text>
           {activeMembers.length === 0 ? (
             <Text className="text-slate-400 text-sm mb-4">No active members.</Text>
           ) : (
@@ -135,27 +155,82 @@ export default function MembersScreen() {
             ))
           )}
 
-          {pendingMembers.length > 0 && (
-            <>
-              <Text className="text-slate-600 font-medium text-sm mb-2 mt-4">Pending</Text>
-              {pendingMembers.map((member) => (
-                <View
-                  key={member.id}
-                  className="flex-row items-center justify-between py-3 border-b border-slate-100"
-                >
-                  <Text className="text-slate-700 flex-1" numberOfLines={1}>
-                    {member.user.display_name ?? member.user_id}
-                  </Text>
-                  <View className="bg-amber-100 px-2 py-1 rounded">
-                    <Text className="text-amber-800 text-xs">Pending</Text>
-                  </View>
-                </View>
-              ))}
-            </>
-          )}
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function PendingApprovalRow({
+  member,
+  groupId,
+  actionLoading,
+  setActionLoading,
+  setBannerMessage,
+  onSuccess,
+}: {
+  member: MemberWithUser;
+  groupId: string;
+  actionLoading: string | null;
+  setActionLoading: (id: string | null) => void;
+  setBannerMessage: (msg: string | null) => void;
+  onSuccess: () => Promise<void>;
+}) {
+  const loading = actionLoading === member.user_id;
+  const displayName = member.user.display_name ?? member.user_id;
+
+  const handleApprove = async () => {
+    setBannerMessage(null);
+    setActionLoading(member.user_id);
+    try {
+      await approveMember(groupId, member.user_id);
+      await onSuccess();
+    } catch (e) {
+      setBannerMessage(e instanceof Error ? e.message : 'Failed to approve');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleReject = async () => {
+    setBannerMessage(null);
+    setActionLoading(member.user_id);
+    try {
+      await rejectMember(groupId, member.user_id);
+      await onSuccess();
+    } catch (e) {
+      setBannerMessage(e instanceof Error ? e.message : 'Failed to reject');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  return (
+    <View className="flex-row items-center justify-between py-3 border-b border-slate-100">
+      <Text className="text-slate-700 flex-1 font-medium" numberOfLines={1}>
+        {displayName}
+      </Text>
+      <View className="flex-row items-center gap-2">
+        <TouchableOpacity
+          onPress={handleApprove}
+          disabled={loading}
+          className="px-3 py-1.5 bg-green-600 rounded-lg"
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text className="text-white text-sm font-medium">Approve</Text>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleReject}
+          disabled={loading}
+          className="px-3 py-1.5 border border-red-500 rounded-lg"
+        >
+          <Text className="text-red-600 text-sm font-medium">Reject</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 

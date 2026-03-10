@@ -476,6 +476,7 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 
 ---
 
+<<<<<<< HEAD
 ## 2026-03-10 — Codex — VCH-52
 **Completed:** Added real integration coverage for `lib/shareLinks.ts` in `tests/integration/shareLinks/shareLinks.test.ts` against local Supabase (Docker), with no Supabase mocks.
 **Decisions made:**
@@ -493,3 +494,14 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Open questions:**
 - Ticket expected non-admin revoke to throw; live policy behavior is a silent no-op (no update, no thrown error).
 **Tests:** Passing — `npm run typecheck && npm run lint && npm run test:integration`
+=======
+## 2026-03-06 — Cursor — Navigation polish, OTP resend, pending approvals
+**Completed:** Groups index: "View calendar" button at top of actions (above Create another group), primary style (bg-slate-900, white text), only when activeGroup is set; navigates to /calendar/week. Calendar: floating "+" FAB bottom-right on week.tsx and agenda.tsx, navigates to /event/create; content wrapped in relative View. Members: "Pending approval" section above Active (admins only, when pending members exist); each row has display_name, Approve (green), Reject (red/outline); approveMember/rejectMember from @/lib/groups; refetchMembers from useGroup after success; per-row loading. useGroup: added refetchMembers() to refresh members after approve/reject. Sign-in: OTP step has "Resend code" with 30s cooldown (countdown state, setInterval decrement); disabled text "Resend code (Xs)" while countdown > 0; active TouchableOpacity when 0; on press calls handleSendOTP (resets countdown to 30); placed below "Use a different number". Used globalThis.setInterval/clearInterval for lint.
+**Decisions made:**
+- refetchMembers added to useGroup so members list updates after approve/reject without leaving the screen.
+**Contracts changed:** No (useGroup gains refetchMembers; no contract file change).
+**Dependencies introduced:** None
+**Next agent needs to know:** None
+**Open questions:** None
+**Tests:** typecheck + lint pass
+>>>>>>> 084776f7 (feat(nav,auth,groups): calendar nav, create event CTA, pending approvals, OTP resend [REQ-25])

@@ -35,6 +35,7 @@ export interface GroupState {
   promoteMember: (userId: string) => Promise<void>;
   demoteMember: (userId: string) => Promise<void>;
   removeMember: (userId: string) => Promise<void>;
+  refetchMembers: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -240,6 +241,16 @@ export function useGroup(): GroupState {
     }
   };
 
+  const refetchMembers = async (): Promise<void> => {
+    if (!activeGroup) return;
+    try {
+      const fetched = await getMembers(activeGroup.id);
+      setMembers(fetched);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load members');
+    }
+  };
+
   return {
     activeGroup,
     groups,
@@ -251,6 +262,7 @@ export function useGroup(): GroupState {
     promoteMember,
     demoteMember,
     removeMember,
+    refetchMembers,
     isLoading,
     error,
   };

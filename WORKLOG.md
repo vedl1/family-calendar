@@ -392,7 +392,6 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - ImportanceLegend can be used in calendar headers or elsewhere to show the legend.
 **Open questions:** None
 **Tests:** typecheck + lint pass
-<<<<<<< HEAD
 
 ---
 
@@ -409,9 +408,6 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Integration tests for the join flow (VCH-49) should now pass once the migration is applied.
 **Open questions:** None
 **Tests:** Passing (58 unit tests; typecheck + lint exit 0)
-=======
-<<<<<<< HEAD
-=======
 
 ---
 
@@ -426,8 +422,24 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Next agent needs to know:**
 - Import: `import { getSharedEvents, clearShareToken } from '@/lib/sharedCalendar'`
 - Caller should call `clearShareToken()` after use to clean up the session variable.
-- Pre-existing typecheck/lint errors on `develop` from missing `ImportanceShape` component are unrelated.
 **Open questions:** None
-**Tests:** Passing (58 unit tests; typecheck + lint clean on new file; pre-existing errors in other files unrelated)
->>>>>>> 2495696a (feat(shareLinks): add lib/sharedCalendar.ts for share-token event fetching [VCH-51])
->>>>>>> eedee816 (feat(shareLinks): add lib/sharedCalendar.ts for share-token event fetching [VCH-51])
+**Tests:** Passing (58 unit tests; typecheck + lint exit 0)
+
+---
+
+## 2026-03-10 — Factory — VCH-54
+**Completed:** Created `hooks/useSharedCalendar.ts` exporting the `useSharedCalendar(token)` hook with the `SharedCalendarState` interface.
+**Decisions made:**
+- Fetches events via `getSharedEvents(token)` on mount and when `token` changes; uses a `cancelled` flag to prevent stale state on unmount (same pattern as `useShareLink` / `useEvents`).
+- `token: null` → returns empty `events: []` immediately with no fetch.
+- Calls `clearShareToken()` in the effect cleanup (after setting `cancelled = true`) for best-effort session cleanup.
+- Read-only hook — no action functions needed.
+- Error messages follow the `e instanceof Error ? e.message : 'Failed to load shared calendar'` pattern.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { useSharedCalendar } from '@/hooks/useSharedCalendar'`
+- `events` contains `EventWithMeta[]` fetched via the share token; ordered by `event_date` asc, `start_time` asc.
+- Token cleanup happens automatically on unmount/token change.
+**Open questions:** None
+**Tests:** Passing (58 unit tests; typecheck + lint exit 0)

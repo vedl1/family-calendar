@@ -506,3 +506,21 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 **Next agent needs to know:** None
 **Open questions:** None
 **Tests:** typecheck + lint pass
+
+---
+
+## 2026-03-10 — Codex — VCH-49
+**Completed:** Rewrote `tests/integration/groups/joinGroup.test.ts` with correct post-VCH-53 happy-path assertions for `joinGroupByInviteLink`, and updated `lib/groups.ts` join behavior to pass under local RLS.
+**Decisions made:**
+- Added/covered 6 integration cases: valid token success, idempotent double-join for existing member, expired token throw, invalid token throw, revoked token throw, and post-join member-row visibility.
+- Kept real-Supabase pattern consistent with events integration: `loadLocalSupabaseEnv`, anon-session `runAsUser`, service-role setup/teardown, `createBaseContext`, and `vi.importActual` real module imports.
+- Local harness debugging showed `group_members` `upsert` path intermittently failed with RLS `42501` while equivalent insert path succeeded for outsider join.
+- Updated `joinGroupByInviteLink` to use `insert` first, then on unique conflict (`23505`) perform `update` to `status: 'active'` for idempotency.
+- Cleanup includes `share_links`, `group_members`, `groups`, `public.users`, and `auth.users` in `afterEach`/`afterAll`.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- `joinGroupByInviteLink` now uses insert + unique-conflict update instead of upsert.
+- Join integration requires local Supabase running (`supabase start`).
+**Open questions:** None
+**Tests:** Passing — `npm run typecheck && npm run lint && npm run test:integration`

@@ -227,7 +227,7 @@ export async function joinGroupByInviteLink(token: string): Promise<void> {
 
   const { error: updateError } = await supabase
     .from('group_members')
-    .update({ role: 'member', status: 'active' })
+    .update({ status: 'active' })
     .eq('group_id', link.group_id)
     .eq('user_id', session.user.id);
 

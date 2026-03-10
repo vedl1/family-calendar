@@ -9,17 +9,9 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { EventWithMeta, Importance } from '@/contracts/types';
-import { IMPORTANCE } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
-
-/** Same shape characters as week.tsx (REQ-17). */
-const SHAPE_CHAR: Record<string, string> = {
-  circle: '●',
-  triangle: '▲',
-  diamond: '◆',
-  star: '★',
-};
+import { ImportanceShape } from '@/components/ImportanceShape';
 
 /** Format start_time "HH:MM:SS" as "H:MM am/pm". */
 function formatTime(startTime: string | null): string {
@@ -147,9 +139,6 @@ function AgendaRow({
   event: EventWithMeta;
   onPress: () => void;
 }) {
-  const config = IMPORTANCE[event.importance as Importance];
-  const shapeChar = config ? SHAPE_CHAR[config.shape] ?? '●' : '●';
-  const colour = config?.colour ?? '#9CA3AF';
   const timeStr = formatTime(event.start_time);
   const durationStr = formatDuration(event.duration_mins);
   const timeAndDuration =
@@ -161,9 +150,9 @@ function AgendaRow({
       activeOpacity={0.8}
       className="flex-row items-center py-3 border-b border-slate-100"
     >
-      <Text style={{ color: colour }} className="text-lg w-6 text-center">
-        {shapeChar}
-      </Text>
+      <View className="w-6 items-center justify-center">
+        <ImportanceShape importance={event.importance as Importance} size={14} />
+      </View>
       <View className="flex-1 ml-3">
         <Text className="text-slate-900 font-medium" numberOfLines={1}>
           {event.title}

@@ -9,18 +9,11 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { EventWithMeta, Importance } from '@/contracts/types';
-import { IMPORTANCE } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
+import { ImportanceShape } from '@/components/ImportanceShape';
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const SHAPE_CHAR: Record<string, string> = {
-  circle: '●',
-  triangle: '▲',
-  diamond: '◆',
-  star: '★',
-};
 
 /** Monday 00:00 of the week containing the given date. */
 function getWeekStart(d: Date): Date {
@@ -216,10 +209,6 @@ function EventCard({
   event: EventWithMeta;
   onPress: () => void;
 }) {
-  const config = IMPORTANCE[event.importance as Importance];
-  const shapeChar = config ? SHAPE_CHAR[config.shape] ?? '●' : '●';
-  const colour = config?.colour ?? '#9CA3AF';
-
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -227,9 +216,7 @@ function EventCard({
       className="mb-2 p-2 rounded-lg border border-slate-200 bg-white"
     >
       <View className="flex-row items-center gap-1 mb-0.5">
-        <Text style={{ color: colour }} className="text-xs">
-          {shapeChar}
-        </Text>
+        <ImportanceShape importance={event.importance as Importance} size={14} />
         <Text className="text-slate-500 text-xs flex-1" numberOfLines={1}>
           {formatTime(event.start_time)}
         </Text>

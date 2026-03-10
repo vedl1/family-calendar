@@ -458,3 +458,18 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Event edit: updateEvent signature is (eventId, Partial<Event minus id/group_id/created_by/created_at>).
 **Open questions:** None
 **Tests:** typecheck + lint pass
+
+---
+
+## 2026-03-06 — Cursor — VCH-32, REQ-25, navigation wiring
+**Completed:** VCH-32: Added read-only shared calendar at `app/shared.tsx` (outside (app), no auth). Token from `useLocalSearchParams<{ token?: string }>()`; validation via `useShareLink(token)`; events via `useSharedCalendar(token)`. If `!isValid && !isLoading` shows "This link is invalid or has expired". Agenda-style list with date headers, `formatTime`/`formatDuration`/`formatDateHeader`, `<ImportanceShape>`; future events only (`event_date >= today`); no RSVP; header "Shared calendar"; empty state "No upcoming events". REQ-25: Week/Agenda segmented toggle on `week.tsx` and `agenda.tsx` — pill control (Week | Agenda) below safe area; active segment bg-slate-900 text white; tapping switches via `router.replace('/calendar/week')` or `router.replace('/calendar/agenda')`. Navigation: "Share links" row on groups index (`app/(app)/groups/index.tsx`) when `isAdmin`, same style as other actions, navigates to `/groups/share-links`.
+**Decisions made:**
+- Shared screen does not use useAuth/useGroup; only useShareLink and useSharedCalendar.
+- Toggle container: `flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3`; segments `flex-1 py-1.5 rounded-lg items-center`.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Shared calendar route: `/shared?token=…` (deep link: `family-calendar://shared?token=…`).
+- Week/Agenda toggle is on both calendar screens; no separate route for "view mode" — navigation is replace between `/calendar/week` and `/calendar/agenda`.
+**Open questions:** None
+**Tests:** typecheck + lint pass

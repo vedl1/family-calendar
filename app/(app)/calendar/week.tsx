@@ -125,6 +125,20 @@ export default function WeekViewScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
+        <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
+          <TouchableOpacity
+            onPress={() => {}}
+            className="flex-1 py-1.5 rounded-lg items-center bg-slate-900"
+          >
+            <Text className="text-white font-medium text-sm">Week</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.replace('/calendar/agenda')}
+            className="flex-1 py-1.5 rounded-lg items-center"
+          >
+            <Text className="text-slate-500 font-medium text-sm">Agenda</Text>
+          </TouchableOpacity>
+        </View>
         <View className="flex-row items-center justify-between mb-3">
           <TouchableOpacity
             onPress={goPrev}

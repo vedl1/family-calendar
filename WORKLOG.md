@@ -473,3 +473,23 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Week/Agenda toggle is on both calendar screens; no separate route for "view mode" — navigation is replace between `/calendar/week` and `/calendar/agenda`.
 **Open questions:** None
 **Tests:** typecheck + lint pass
+
+---
+
+## 2026-03-10 — Codex — VCH-52
+**Completed:** Added real integration coverage for `lib/shareLinks.ts` in `tests/integration/shareLinks/shareLinks.test.ts` against local Supabase (Docker), with no Supabase mocks.
+**Decisions made:**
+- Reused the established integration harness pattern from events/join tests: `loadLocalSupabaseEnv()`, anon `runAsUser`, service-role seeding/cleanup, and `createBaseContext()` (creator/admin + member + outsider + group).
+- Used `vi.importActual` for `@/lib/supabase` and `@/lib/shareLinks` so tests execute real module code.
+- Added an `expo-crypto` test mock for `randomUUID` only, because the real Expo package import is not Node-test compatible in Vitest.
+- Verified and aligned tests with actual DB behavior: table is `share_links`; outsider can read links via current SELECT policy; non-admin revoke call resolves with no row update (RLS no-op) rather than throwing.
+- Cleanup removes seeded `share_links`, `group_members`, `groups`, `public.users`, and attempts auth-user deletion via service-role admin API in `afterEach`/`afterAll`.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- File added: `tests/integration/shareLinks/shareLinks.test.ts` (10 cases).
+- Prerequisite remains: local Supabase running (`supabase start`).
+- Timestamp comparisons normalize `expires_at` to ISO because Postgres returns `+00:00` format.
+**Open questions:**
+- Ticket expected non-admin revoke to throw; live policy behavior is a silent no-op (no update, no thrown error).
+**Tests:** Passing — `npm run typecheck && npm run lint && npm run test:integration`

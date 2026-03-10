@@ -524,3 +524,29 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Join integration requires local Supabase running (`supabase start`).
 **Open questions:** None
 **Tests:** Passing — `npm run typecheck && npm run lint && npm run test:integration`
+
+---
+
+## 2026-03-10 — Claude Code (Orchestrator) — Phase 1 Complete
+**Completed:** All Phase 1 tickets merged to `main`. 37 PRs across Phases 0–4 reviewed and merged. develop merged to main via no-ff merge.
+**Summary of Phase 1 deliverables:**
+- Auth: Google OAuth + Phone OTP sign-in, session persistence, onboarding (VCH-6, VCH-39, VCH-40)
+- Groups: create, invite, approve/reject, promote/demote, remove members (VCH-42, VCH-43)
+- Events: create, view, edit, delete, RSVP, realtime updates (VCH-45, VCH-46, VCH-23, VCH-24, VCH-27)
+- Calendar: week view, agenda view, week/agenda toggle (VCH-20, VCH-21)
+- Share links: generate, revoke, join via link, shared read-only calendar (VCH-48, VCH-29, VCH-34, VCH-32)
+- Components: ImportanceShape, ImportanceLegend (VCH-17, VCH-18)
+- Nav polish: Groups→Calendar CTA, Create event FAB, pending approvals, OTP resend
+- Tests: 58+ unit tests, integration tests for events, groups, share links, join flow
+- DB: RLS policies on all 6 tables, share-link join policy (VCH-25, VCH-53)
+**Decisions made:**
+- `joinGroupByInviteLink` uses insert + 23505 fallback update (upsert RLS limitation workaround)
+- `app.json` `expo-secure-store` plugin removed (not installed; AsyncStorage used instead)
+- EAS project configured: projectId `fec7bd9c-83a8-4513-a78a-ef6d647ae16f`, bundle ID `com.vedluhana.familycalendar`
+**Contracts changed:** No
+**Next agent needs to know:**
+- `main` is now at Phase 1 complete. All Phase 1 Linear tickets marked Done.
+- EAS build profile `preview` targets TestFlight distribution.
+- Phase 2 planning can begin from `main`.
+**Open questions:** None
+**Tests:** 58 unit tests passing; integration tests pass against local Supabase

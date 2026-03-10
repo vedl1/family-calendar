@@ -323,3 +323,18 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - To add full event edit: implement form in `app/(app)/event/edit/[id].tsx` using `useEvents(groupId).updateEvent(eventId, params)` and same field set as create (title, description, importance, date, time, duration, location).
 **Open questions:** None
 **Tests:** typecheck + lint pass
+
+---
+
+## 2026-03-10 — Cursor — VCH-50
+**Completed:** Built `app/(app)/groups/join.tsx` — Join group via invite link screen. Screen reads optional `token` from URL via `useLocalSearchParams<{ token?: string }>()` and pre-fills the input when present (deep link: `family-calendar://groups/join?token=xxx`). Single TextInput for invite token/link; token parsing: if input contains `token=`, extract value after it (split on `token=`, take index 1, then split on `&`, take index 0); otherwise use trimmed input. "Join group" button disabled when input parses to empty or `isLoading`; on success `router.replace('/')`. Error shown in red banner (bg-red-50 border border-red-200); ActivityIndicator inside button while loading. Back button at top. Layout: SafeAreaView → KeyboardAvoidingView → ScrollView → View (slate palette, NativeWind, same pattern as empty.tsx / onboarding.tsx).
+**Decisions made:**
+- `parseToken(input)` implemented in-screen to handle full deep link paste or raw token; keeps hook free of URL semantics.
+- Pre-fill via `useEffect` when `tokenParam` is present so deep link and manual entry both work.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Route: `/groups/join`. Optional query param `token` for deep link. Empty state CTA can link to `/groups/join` (no token) for manual paste.
+- `useJoinGroup()` from `@/hooks/useJoinGroup` — `join(token)`, `isLoading`, `error`.
+**Open questions:** None
+**Tests:** typecheck + lint pass

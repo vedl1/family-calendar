@@ -43,6 +43,16 @@ export default function GroupsIndexScreen() {
         <Text className="text-slate-500 text-sm mb-4">
           {activeGroup?.name ?? 'Select a group'}
         </Text>
+        {activeGroup ? (
+          <TouchableOpacity
+            onPress={() => router.push('/calendar/week')}
+            className="h-12 bg-slate-900 rounded-xl items-center justify-center mb-3"
+          >
+            <Text className="text-white font-medium text-base">
+              View calendar
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity
           onPress={() => router.push('/groups/create')}
           className="h-12 border border-slate-300 rounded-xl items-center justify-center mb-3"

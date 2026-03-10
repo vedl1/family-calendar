@@ -91,6 +91,7 @@ export default function AgendaScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <View className="flex-1" style={{ position: 'relative' }}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
         <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
           <TouchableOpacity
@@ -142,6 +143,13 @@ export default function AgendaScreen() {
           ))}
         </ScrollView>
       )}
+      <TouchableOpacity
+        onPress={() => router.push('/event/create')}
+        className="absolute bottom-6 right-6 w-14 h-14 bg-slate-900 rounded-full items-center justify-center shadow-lg"
+      >
+        <Text className="text-white text-3xl font-light">+</Text>
+      </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }

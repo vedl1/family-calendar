@@ -326,3 +326,21 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - `generate` and `revoke` throw on failure; `error` state also set for UI display.
 **Open questions:** None
 **Tests:** Passing (58 unit tests; typecheck + lint exit 0; integration tests skipped — require local Supabase)
+
+---
+
+## 2026-03-10 — Codex — VCH-49
+**Completed:** Added real integration tests for join flow in `tests/integration/groups/joinGroup.test.ts` covering `joinGroupByInviteLink` behavior with local Supabase (Docker) and no Supabase mocks.
+**Decisions made:**
+- Followed the same integration pattern used by events tests: local env loader, service-role seeding/cleanup, anon user sessions via `runAsUser`, and `createBaseContext` for creator/member/outsider + group setup.
+- Used `vi.importActual` to load real implementations for `@/lib/supabase` and `@/lib/groups` while swapping session context per test user.
+- Seeded invite artifacts through service role and asserted against actual DB behavior in this codebase (including RLS-denied outsider join path).
+- Added cleanup for seeded rows in `share_links`, `group_members`, `groups`, and `public.users`; attempted auth user cleanup via admin API and tolerated local `invalid JWT` response from GoTrue admin endpoint.
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Tests require local Supabase running (`supabase start`) at `http://localhost:54321`.
+- Join-flow integration currently validates real behavior where outsider join is blocked by current RLS on `group_members` insert.
+**Open questions:**
+- Ticket expectation references `group_invites`, while implementation uses `share_links`; tests are aligned to actual implementation.
+**Tests:** Passing — `npm run typecheck`, `npm run lint`, `npm run test:integration`

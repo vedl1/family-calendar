@@ -392,6 +392,7 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - ImportanceLegend can be used in calendar headers or elsewhere to show the legend.
 **Open questions:** None
 **Tests:** typecheck + lint pass
+<<<<<<< HEAD
 
 ---
 
@@ -408,3 +409,25 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - Integration tests for the join flow (VCH-49) should now pass once the migration is applied.
 **Open questions:** None
 **Tests:** Passing (58 unit tests; typecheck + lint exit 0)
+=======
+<<<<<<< HEAD
+=======
+
+---
+
+## 2026-03-10 — Factory — VCH-51
+**Completed:** Created `lib/sharedCalendar.ts` with two exported functions: `getSharedEvents(token)` and `clearShareToken()`.
+**Decisions made:**
+- `getSharedEvents`: calls `supabase.rpc('set_share_token', { p_token: token })` to set the session-scoped config var, then queries events with the identical embedded join from `getEvents` in `lib/events.ts` (`creator:users!created_by(...)`, `rsvps(*, user:users!user_id(...))`). No `group_id` filter — RLS scopes results automatically. Ordered by `event_date` asc, `start_time` asc. Returns `data as unknown as EventWithMeta[]`.
+- `clearShareToken`: calls the same RPC with `p_token: null`; swallows errors (best-effort cleanup).
+- Throws Supabase errors directly (same pattern as all other lib functions).
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Import: `import { getSharedEvents, clearShareToken } from '@/lib/sharedCalendar'`
+- Caller should call `clearShareToken()` after use to clean up the session variable.
+- Pre-existing typecheck/lint errors on `develop` from missing `ImportanceShape` component are unrelated.
+**Open questions:** None
+**Tests:** Passing (58 unit tests; typecheck + lint clean on new file; pre-existing errors in other files unrelated)
+>>>>>>> 2495696a (feat(shareLinks): add lib/sharedCalendar.ts for share-token event fetching [VCH-51])
+>>>>>>> eedee816 (feat(shareLinks): add lib/sharedCalendar.ts for share-token event fetching [VCH-51])

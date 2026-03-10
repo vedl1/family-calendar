@@ -35,7 +35,7 @@ function truncateToken(token: string, len = 8): string {
  */
 export default function ShareLinksScreen() {
   const router = useRouter();
-  const { activeGroup } = useGroup();
+  const { activeGroup, isAdmin } = useGroup();
   const groupId = activeGroup?.id ?? null;
   const { links, isLoading, error, generate, revoke } = useShareLinks(groupId);
 
@@ -138,17 +138,19 @@ export default function ShareLinksScreen() {
                         Expires: {formatExpiry(link.expires_at)}
                       </Text>
                     </View>
-                    <TouchableOpacity
-                      onPress={() => handleRevoke(link.id)}
-                      disabled={!!revokingId}
-                      className="px-4 py-2 rounded-lg bg-red-100"
-                    >
-                      {revokingId === link.id ? (
-                        <ActivityIndicator size="small" color="#b91c1c" />
-                      ) : (
-                        <Text className="text-red-700 font-medium text-sm">Revoke</Text>
-                      )}
-                    </TouchableOpacity>
+                    {isAdmin ? (
+                      <TouchableOpacity
+                        onPress={() => handleRevoke(link.id)}
+                        disabled={!!revokingId}
+                        className="px-4 py-2 rounded-lg bg-red-100"
+                      >
+                        {revokingId === link.id ? (
+                          <ActivityIndicator size="small" color="#b91c1c" />
+                        ) : (
+                          <Text className="text-red-700 font-medium text-sm">Revoke</Text>
+                        )}
+                      </TouchableOpacity>
+                    ) : null}
                   </View>
                   <Text className="text-slate-400 text-xs mt-2" selectable>
                     family-calendar://groups/join?token={link.token}
@@ -158,42 +160,44 @@ export default function ShareLinksScreen() {
             </View>
           )}
 
-          <View className="mt-6 pt-4 border-t border-slate-200">
-            <TouchableOpacity
-              onPress={() => setSetExpiry((v) => !v)}
-              className="flex-row items-center mb-3"
-            >
-              <View
-                className="w-5 h-5 rounded border border-slate-300 mr-2 items-center justify-center"
-                style={{ backgroundColor: setExpiry ? '#0f172a' : 'transparent' }}
+          {isAdmin ? (
+            <View className="mt-6 pt-4 border-t border-slate-200">
+              <TouchableOpacity
+                onPress={() => setSetExpiry((v) => !v)}
+                className="flex-row items-center mb-3"
               >
-                {setExpiry ? (
-                  <Text className="text-white text-xs">✓</Text>
-                ) : null}
-              </View>
-              <Text className="text-slate-600 text-sm">Set expiry</Text>
-            </TouchableOpacity>
-            {setExpiry ? (
-              <TextInput
-                value={expiryDate}
-                onChangeText={setExpiryDate}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#94a3b8"
-                className="h-10 border border-slate-200 rounded-lg px-3 text-slate-900 text-sm mb-4"
-              />
-            ) : null}
-            <TouchableOpacity
-              onPress={handleGenerate}
-              disabled={generating || (setExpiry && !expiryValid)}
-              className="h-12 bg-slate-900 rounded-xl items-center justify-center flex-row active:opacity-80 disabled:opacity-50"
-            >
-              {generating ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text className="text-white font-medium text-base">Generate link</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+                <View
+                  className="w-5 h-5 rounded border border-slate-300 mr-2 items-center justify-center"
+                  style={{ backgroundColor: setExpiry ? '#0f172a' : 'transparent' }}
+                >
+                  {setExpiry ? (
+                    <Text className="text-white text-xs">✓</Text>
+                  ) : null}
+                </View>
+                <Text className="text-slate-600 text-sm">Set expiry</Text>
+              </TouchableOpacity>
+              {setExpiry ? (
+                <TextInput
+                  value={expiryDate}
+                  onChangeText={setExpiryDate}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor="#94a3b8"
+                  className="h-10 border border-slate-200 rounded-lg px-3 text-slate-900 text-sm mb-4"
+                />
+              ) : null}
+              <TouchableOpacity
+                onPress={handleGenerate}
+                disabled={generating || (setExpiry && !expiryValid)}
+                className="h-12 bg-slate-900 rounded-xl items-center justify-center flex-row active:opacity-80 disabled:opacity-50"
+              >
+                {generating ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-medium text-base">Generate link</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -392,3 +392,19 @@ Next agent: Claude Code — start with VCH-22 (DB migrations)
 - ImportanceLegend can be used in calendar headers or elsewhere to show the legend.
 **Open questions:** None
 **Tests:** typecheck + lint pass
+
+---
+
+## 2026-03-10 — Factory — VCH-53
+**Completed:** Created `supabase/migrations/20260310000001_group_members_share_link_join.sql` — additive RLS policy that allows authenticated users to INSERT their own membership row into `group_members` when a valid (non-revoked, non-expired) share link exists for the target group.
+**Decisions made:**
+- Policy `group_members_insert_via_share_link` uses `WITH CHECK (user_id = auth.uid() AND EXISTS (SELECT 1 FROM share_links WHERE ...))` — users can only insert a row for themselves, and only when a valid share link exists for that group.
+- Existing `group_members_insert_admin` policy left untouched — PostgreSQL OR-combines multiple INSERT policies, so either path (admin invite or share-link join) now works.
+- No helper function needed — the EXISTS subquery is simple and runs against the `share_links` table which has `share_links_select_anyone` (open SELECT).
+**Contracts changed:** No
+**Dependencies introduced:** None
+**Next agent needs to know:**
+- Human must run `supabase db push` after this PR merges to apply the migration to local/staging DB.
+- Integration tests for the join flow (VCH-49) should now pass once the migration is applied.
+**Open questions:** None
+**Tests:** Passing (58 unit tests; typecheck + lint exit 0)

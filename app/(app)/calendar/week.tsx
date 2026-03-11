@@ -103,9 +103,18 @@ export default function WeekViewScreen() {
           ? 'Next week'
           : `${weekStartStr} – ${weekEndStr}`;
 
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center" style={{ flex: 1 }}>
+        <ActivityIndicator size="large" className="text-slate-600" />
+        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">
           Select a group to view the calendar.
         </Text>
@@ -113,18 +122,9 @@ export default function WeekViewScreen() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" className="text-slate-600" />
-        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <View className="flex-1" style={{ position: 'relative' }}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <View className="flex-1" style={{ flex: 1, position: 'relative' }}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
         <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
           <TouchableOpacity
@@ -167,6 +167,7 @@ export default function WeekViewScreen() {
 
       <ScrollView
         className="flex-1"
+        style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 24 }}
         horizontal
         showsHorizontalScrollIndicator={true}

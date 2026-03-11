@@ -42,12 +42,11 @@ export default function CreateEventScreen() {
 
   const titleTrimmed = title.trim();
   const descriptionTrimmed = description.trim();
-  const descValid =
-    descriptionTrimmed.length > 0 && descriptionTrimmed.length <= MAX_DESCRIPTION_LENGTH;
+  const descValid = descriptionTrimmed.length <= MAX_DESCRIPTION_LENGTH;
   const dateValid = /^\d{4}-\d{2}-\d{2}$/.test(date.trim());
-  const timeValid = /^([01]?\d|2[0-3]):[0-5]\d$/.test(startTime.trim());
+  const timeValid = startTime.trim() === '' || /^([01]?\d|2[0-3]):[0-5]\d$/.test(startTime.trim());
   const durationNum = parseInt(durationMins.trim(), 10);
-  const durationValid = !isNaN(durationNum) && durationNum > 0;
+  const durationValid = durationMins.trim() === '' || (!isNaN(durationNum) && durationNum > 0);
   const canSubmit =
     !!groupId &&
     titleTrimmed.length > 0 &&
@@ -57,24 +56,21 @@ export default function CreateEventScreen() {
     durationValid &&
     !submitting;
 
-  const buildStartEnd = (): { start_at: string; end_at: string } => {
-    const start = new Date(`${date.trim()}T${startTime.trim()}:00`);
-    const end = new Date(start.getTime() + durationNum * 60_000);
-    return { start_at: start.toISOString(), end_at: end.toISOString() };
-  };
-
   const handleSubmit = async () => {
     if (!canSubmit || !groupId) return;
     setSubmitting(true);
     try {
-      const { start_at, end_at } = buildStartEnd();
+      const timeStr = startTime.trim() || '00:00';
+      const start = new Date(`${date.trim()}T${timeStr}:00`);
+      const dur = durationMins.trim() !== '' ? durationNum : 0;
+      const end = new Date(start.getTime() + dur * 60_000);
       await createEvent({
         group_id: groupId,
         title: titleTrimmed,
-        description: descriptionTrimmed,
         importance,
-        start_at,
-        end_at,
+        start_at: start.toISOString(),
+        end_at: end.toISOString(),
+        ...(descriptionTrimmed && { description: descriptionTrimmed }),
         ...(location.trim() && { location: location.trim() }),
       });
       router.back();
@@ -85,26 +81,28 @@ export default function CreateEventScreen() {
 
   if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Select a group to create an event.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
           keyboardShouldPersistTaps="handled"
           className="flex-1"
+          style={{ flex: 1 }}
         >
           <View className="px-6 pt-6 pb-8 max-w-md w-full self-center">
             <TouchableOpacity onPress={() => router.back()} className="mb-6">
-              <Text className="text-slate-500 text-base">Back</Text>
+              <Text className="text-slate-500 text-base">← Back</Text>
             </TouchableOpacity>
             <Text className="text-2xl font-semibold text-slate-900 mb-1">Create event</Text>
             <Text className="text-slate-500 text-base mb-6">

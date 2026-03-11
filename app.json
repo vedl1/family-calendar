@@ -8,17 +8,22 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.vedluhana.familycalendar"
+      "bundleIdentifier": "com.vedluhana.familycalendar",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.vedluhana.familycalendar",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
       [
         "expo-image-picker",
         {
@@ -28,6 +33,15 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "newArchEnabled": true,
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "fec7bd9c-83a8-4513-a78a-ef6d647ae16f"
+      }
     }
   }
 }

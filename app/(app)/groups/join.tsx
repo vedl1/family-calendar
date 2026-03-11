@@ -57,15 +57,17 @@ export default function JoinGroupScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           className="flex-1"
+          style={{ flex: 1 }}
         >
           <View className="flex-1 px-6 pt-12 pb-8 justify-center max-w-md w-full self-center">
             <TouchableOpacity onPress={() => router.back()} className="mb-6">

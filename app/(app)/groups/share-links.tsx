@@ -90,18 +90,18 @@ export default function ShareLinksScreen() {
 
   if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Select a group to manage share links.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <ScrollView className="flex-1" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="px-4 pt-4 pb-2 border-b border-slate-200">
           <TouchableOpacity onPress={() => router.back()} className="mb-2">
-            <Text className="text-slate-500 text-base">Back</Text>
+            <Text className="text-slate-500 text-base">← Back</Text>
           </TouchableOpacity>
           <Text className="text-xl font-semibold text-slate-900">Share links</Text>
         </View>

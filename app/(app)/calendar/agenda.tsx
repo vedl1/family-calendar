@@ -70,9 +70,18 @@ export default function AgendaScreen() {
 
   const dateKeys = useMemo(() => Object.keys(eventsByDate).sort(), [eventsByDate]);
 
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center" style={{ flex: 1 }}>
+        <ActivityIndicator size="large" className="text-slate-600" />
+        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">
           Select a group to view the calendar.
         </Text>
@@ -80,19 +89,13 @@ export default function AgendaScreen() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" className="text-slate-600" />
-        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <View className="flex-1" style={{ position: 'relative' }}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <View className="flex-1" style={{ flex: 1, position: 'relative' }}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
+        <TouchableOpacity onPress={() => router.back()} className="mb-2">
+          <Text className="text-slate-500 text-base">← Back</Text>
+        </TouchableOpacity>
         <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
           <TouchableOpacity
             onPress={() => router.replace('/calendar/week')}
@@ -125,6 +128,7 @@ export default function AgendaScreen() {
       ) : (
         <ScrollView
           className="flex-1"
+          style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
         >
           {dateKeys.map((dateStr) => (

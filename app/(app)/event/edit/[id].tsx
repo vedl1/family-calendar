@@ -121,7 +121,7 @@ export default function EditEventScreen() {
 
   if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Select a group to edit events.</Text>
       </SafeAreaView>
     );
@@ -129,7 +129,7 @@ export default function EditEventScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center" style={{ flex: 1 }}>
         <ActivityIndicator size="large" className="text-slate-600" />
         <Text className="mt-3 text-slate-500">Loading event…</Text>
       </SafeAreaView>
@@ -138,7 +138,7 @@ export default function EditEventScreen() {
 
   if (!event) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Event not found.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
           <Text className="text-slate-700 font-medium">Back</Text>
@@ -149,7 +149,7 @@ export default function EditEventScreen() {
 
   if (!canEdit) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center mb-4">
           You don&apos;t have permission to edit this event.
         </Text>
@@ -161,19 +161,21 @@ export default function EditEventScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
           keyboardShouldPersistTaps="handled"
           className="flex-1"
+          style={{ flex: 1 }}
         >
           <View className="px-6 pt-6 pb-8 max-w-md w-full self-center">
             <TouchableOpacity onPress={() => router.back()} className="mb-6">
-              <Text className="text-slate-500 text-base">Back</Text>
+              <Text className="text-slate-500 text-base">← Back</Text>
             </TouchableOpacity>
             <Text className="text-2xl font-semibold text-slate-900 mb-1">Edit event</Text>
             <Text className="text-slate-500 text-base mb-6">

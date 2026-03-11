@@ -96,7 +96,7 @@ export default function SharedCalendarScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
         <Text className="text-xl font-semibold text-slate-900">Shared calendar</Text>
       </View>
@@ -116,6 +116,7 @@ export default function SharedCalendarScreen() {
       ) : (
         <ScrollView
           className="flex-1"
+          style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 24 }}
         >
           {dateKeys.map((dateStr) => (

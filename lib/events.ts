@@ -43,17 +43,20 @@ export async function createEvent(params: {
   const start_time = `${hh}:${mm}:${ss}`;
   const duration_mins = Math.round((endDate.getTime() - startDate.getTime()) / 60_000);
 
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+
   const { data, error } = await supabase
     .from('events')
     .insert({
       group_id: params.group_id,
+      created_by: authUser?.id ?? null,
       title: params.title,
       description: params.description ?? null,
       importance: params.importance,
       location: params.location ?? null,
       event_date,
-      start_time,
-      duration_mins,
+      start_time: start_time || null,
+      duration_mins: duration_mins > 0 ? duration_mins : null,
     })
     .select()
     .single();

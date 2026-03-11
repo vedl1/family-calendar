@@ -26,18 +26,20 @@ export class GroupMustHaveAdminError extends Error {
 // ============================================================
 
 /**
- * Create a new group.
- * The DB trigger (trg_group_created) automatically inserts the creator
- * as an active admin — do NOT manually insert into group_members.
+ * Create a new group via RPC.
+ * The create_group function (SECURITY DEFINER) inserts the group and
+ * adds the creator as an active admin in a single transaction, bypassing
+ * the RLS chicken-and-egg problem on group_members.
  */
 export async function createGroup(params: {
   name: string;
   description?: string;
 }): Promise<Group> {
   const { data, error } = await supabase
-    .from('groups')
-    .insert({ name: params.name, description: params.description ?? null })
-    .select()
+    .rpc('create_group', {
+      p_name: params.name,
+      p_description: params.description ?? null,
+    })
     .single();
 
   if (error) throw error;

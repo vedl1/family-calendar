@@ -17,10 +17,7 @@
       "package": "com.vedluhana.familycalendar",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      },
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      }
     },
     "plugins": [
       "expo-router",

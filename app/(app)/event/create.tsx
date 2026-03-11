@@ -106,7 +106,7 @@ export default function CreateEventScreen() {
             </TouchableOpacity>
             <Text className="text-2xl font-semibold text-slate-900 mb-1">Create event</Text>
             <Text className="text-slate-500 text-base mb-6">
-              Add event details. Title and description are required.
+              Title and date are required. All other fields are optional.
             </Text>
 
             {error ? (
@@ -126,7 +126,7 @@ export default function CreateEventScreen() {
             />
 
             <Text className="text-slate-600 text-sm mb-2">
-              Description (required, max {MAX_DESCRIPTION_LENGTH} chars)
+              Description (optional, max {MAX_DESCRIPTION_LENGTH} chars)
             </Text>
             <TextInput
               value={description}
@@ -175,7 +175,7 @@ export default function CreateEventScreen() {
               className="h-12 border border-slate-200 rounded-xl px-4 text-slate-900 text-base mb-4"
             />
 
-            <Text className="text-slate-600 text-sm mb-2">Start time (HH:MM)</Text>
+            <Text className="text-slate-600 text-sm mb-2">Start time (HH:MM, optional)</Text>
             <TextInput
               value={startTime}
               onChangeText={setStartTime}
@@ -185,7 +185,7 @@ export default function CreateEventScreen() {
               className="h-12 border border-slate-200 rounded-xl px-4 text-slate-900 text-base mb-4"
             />
 
-            <Text className="text-slate-600 text-sm mb-2">Duration (minutes)</Text>
+            <Text className="text-slate-600 text-sm mb-2">Duration (minutes, optional)</Text>
             <TextInput
               value={durationMins}
               onChangeText={setDurationMins}

@@ -123,8 +123,8 @@ export default function WeekViewScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <View className="flex-1" style={{ position: 'relative' }}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <View className="flex-1" style={{ flex: 1, position: 'relative' }}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
         <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
           <TouchableOpacity
@@ -167,6 +167,7 @@ export default function WeekViewScreen() {
 
       <ScrollView
         className="flex-1"
+        style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 24 }}
         horizontal
         showsHorizontalScrollIndicator={true}

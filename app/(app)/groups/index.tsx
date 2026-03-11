@@ -30,7 +30,7 @@ export default function GroupsIndexScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
         <GroupSelector />
       </View>

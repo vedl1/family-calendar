@@ -9,7 +9,7 @@ export default function EmptyStateScreen() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 px-6 justify-center max-w-md w-full self-center">
+    <View className="flex-1 px-6 justify-center max-w-md w-full self-center" style={{ flex: 1 }}>
       <Text className="text-2xl font-semibold text-slate-900 mb-1">
         No groups yet
       </Text>

@@ -97,8 +97,8 @@ export default function ShareLinksScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <ScrollView className="flex-1" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="px-4 pt-4 pb-2 border-b border-slate-200">
           <TouchableOpacity onPress={() => router.back()} className="mb-2">
             <Text className="text-slate-500 text-base">Back</Text>

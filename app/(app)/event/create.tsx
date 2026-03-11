@@ -92,15 +92,17 @@ export default function CreateEventScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
           keyboardShouldPersistTaps="handled"
           className="flex-1"
+          style={{ flex: 1 }}
         >
           <View className="px-6 pt-6 pb-8 max-w-md w-full self-center">
             <TouchableOpacity onPress={() => router.back()} className="mb-6">

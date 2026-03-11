@@ -96,8 +96,8 @@ export default function MembersScreen() {
   const pendingMembers = members.filter(m => m.status === 'pending');
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <ScrollView className="flex-1" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="px-6 pt-12 pb-8 max-w-md w-full self-center">
           <TouchableOpacity onPress={() => router.back()} className="mb-6">
             <Text className="text-slate-500 text-base">Back</Text>

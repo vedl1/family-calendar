@@ -16,6 +16,8 @@ export default function AppLayout() {
     }
   }, [isLoading, isAuthenticated, router]);
 
+  if (!isLoading && !isAuthenticated) return null;
+
   return (
     <Stack
       screenOptions={{

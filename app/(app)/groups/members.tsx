@@ -83,7 +83,7 @@ export default function MembersScreen() {
 
   if (!activeGroup) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Select a group first.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
           <Text className="text-slate-700 font-medium">Back</Text>
@@ -100,7 +100,7 @@ export default function MembersScreen() {
       <ScrollView className="flex-1" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="px-6 pt-12 pb-8 max-w-md w-full self-center">
           <TouchableOpacity onPress={() => router.back()} className="mb-6">
-            <Text className="text-slate-500 text-base">Back</Text>
+            <Text className="text-slate-500 text-base">← Back</Text>
           </TouchableOpacity>
           <Text className="text-2xl font-semibold text-slate-900 mb-1">
             Members

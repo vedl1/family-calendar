@@ -44,7 +44,7 @@ export default function InviteScreen() {
 
   if (!activeGroup) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Select a group first.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
           <Text className="text-slate-700 font-medium">Back</Text>
@@ -54,7 +54,7 @@ export default function InviteScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+    <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
@@ -66,7 +66,7 @@ export default function InviteScreen() {
         >
           <View className="flex-1 px-6 pt-12 pb-8 max-w-md w-full self-center">
             <TouchableOpacity onPress={() => router.back()} className="mb-6">
-              <Text className="text-slate-500 text-base">Back</Text>
+              <Text className="text-slate-500 text-base">← Back</Text>
             </TouchableOpacity>
             <Text className="text-2xl font-semibold text-slate-900 mb-1">
               Invite member

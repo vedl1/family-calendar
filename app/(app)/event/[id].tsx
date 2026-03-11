@@ -123,7 +123,7 @@ export default function EventDetailScreen() {
 
   if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Select a group to view this event.</Text>
       </SafeAreaView>
     );
@@ -131,7 +131,7 @@ export default function EventDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center" style={{ flex: 1 }}>
         <ActivityIndicator size="large" className="text-slate-600" />
         <Text className="mt-3 text-slate-500">Loading event…</Text>
       </SafeAreaView>
@@ -140,7 +140,7 @@ export default function EventDetailScreen() {
 
   if (!event) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
         <Text className="text-slate-500 text-center">Event not found.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
           <Text className="text-slate-700 font-medium">Back</Text>
@@ -161,7 +161,7 @@ export default function EventDetailScreen() {
       <ScrollView className="flex-1" style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="px-4 pt-4 pb-2 border-b border-slate-200">
           <TouchableOpacity onPress={() => router.back()} className="mb-2">
-            <Text className="text-slate-500 text-base">Back</Text>
+            <Text className="text-slate-500 text-base">← Back</Text>
           </TouchableOpacity>
         </View>
 

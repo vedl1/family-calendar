@@ -103,21 +103,21 @@ export default function WeekViewScreen() {
           ? 'Next week'
           : `${weekStartStr} – ${weekEndStr}`;
 
-  if (!groupId) {
+  if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
-        <Text className="text-slate-500 text-center">
-          Select a group to view the calendar.
-        </Text>
+      <SafeAreaView className="flex-1 bg-white items-center justify-center" style={{ flex: 1 }}>
+        <ActivityIndicator size="large" className="text-slate-600" />
+        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
       </SafeAreaView>
     );
   }
 
-  if (isLoading) {
+  if (!groupId) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" className="text-slate-600" />
-        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" style={{ flex: 1 }}>
+        <Text className="text-slate-500 text-center">
+          Select a group to view the calendar.
+        </Text>
       </SafeAreaView>
     );
   }

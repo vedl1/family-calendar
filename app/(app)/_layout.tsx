@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
- * Layout for authenticated app screens — groups, calendar, etc.
- * Auth guard: redirect to sign-in when not authenticated.
+ * Layout for authenticated app screens — bottom tab bar:
+ * Calendar, Groups, Profile. Auth guard: redirect to sign-in
+ * when not authenticated.
  */
 export default function AppLayout() {
   const router = useRouter();
@@ -17,11 +19,66 @@ export default function AppLayout() {
   }, [isLoading, isAuthenticated, router]);
 
   return (
-    <Stack
+    <Tabs
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopWidth: 1,
+          borderTopColor: '#e2e8f0',
+        },
+        tabBarActiveTintColor: '#0f172a',
+        tabBarInactiveTintColor: '#94a3b8',
       }}
-    />
+    >
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: 'Calendar',
+          href: '/calendar/week',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={focused ? 'calendar' : 'calendar-outline'}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="groups"
+        options={{
+          title: 'Groups',
+          href: '/groups',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={focused ? 'people' : 'people-outline'}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          href: '/profile',
+          tabBarIcon: ({ focused, color, size }) => (
+            <Ionicons
+              name={focused ? 'person' : 'person-outline'}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="event"
+        options={{
+          href: null,
+        }}
+      />
+    </Tabs>
   );
 }

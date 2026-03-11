@@ -12,6 +12,7 @@ import type { EventWithMeta, Importance } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
 import { ImportanceShape } from '@/components/ImportanceShape';
+import { ImportanceLegend } from '@/components/ImportanceLegend';
 
 /** Format start_time "HH:MM:SS" as "H:MM am/pm". */
 function formatTime(startTime: string | null): string {
@@ -70,21 +71,21 @@ export default function AgendaScreen() {
 
   const dateKeys = useMemo(() => Object.keys(eventsByDate).sort(), [eventsByDate]);
 
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" className="text-slate-600" />
+        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!groupId) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
         <Text className="text-slate-500 text-center">
           Select a group to view the calendar.
         </Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" className="text-slate-600" />
-        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
       </SafeAreaView>
     );
   }
@@ -107,7 +108,8 @@ export default function AgendaScreen() {
             <Text className="text-white font-medium text-sm">Agenda</Text>
           </TouchableOpacity>
         </View>
-        <Text className="text-xl font-semibold text-slate-900">Agenda</Text>
+        <Text className="text-xl font-semibold text-slate-900 mb-2">Agenda</Text>
+        <ImportanceLegend />
       </View>
 
       {error ? (

@@ -10,13 +10,15 @@ import { useAuth } from '@/hooks/useAuth';
  */
 export default function AppLayout() {
   const router = useRouter();
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.replace('/sign-in');
-    }
-  }, [isLoading, isAuthenticated, router]);
+    if (isLoading) return;
+    if (!isAuthenticated) router.replace('/sign-in');
+    else if (!user) router.replace('/onboarding');
+  }, [isLoading, isAuthenticated, user, router]);
+
+  if (!isLoading && (!isAuthenticated || !user)) return null;
 
   return (
     <Tabs

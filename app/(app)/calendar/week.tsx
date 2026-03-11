@@ -5,13 +5,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { EventWithMeta, Importance } from '@/contracts/types';
+import { IMPORTANCE } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
 import { ImportanceShape } from '@/components/ImportanceShape';
+import { ImportanceLegend } from '@/components/ImportanceLegend';
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -103,21 +106,21 @@ export default function WeekViewScreen() {
           ? 'Next week'
           : `${weekStartStr} – ${weekEndStr}`;
 
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" className="text-slate-600" />
+        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!groupId) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center px-6">
         <Text className="text-slate-500 text-center">
           Select a group to view the calendar.
         </Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" className="text-slate-600" />
-        <Text className="mt-3 text-slate-500 text-base">Loading events…</Text>
       </SafeAreaView>
     );
   }
@@ -156,6 +159,9 @@ export default function WeekViewScreen() {
           >
             <Text className="text-slate-700 text-lg font-medium">›</Text>
           </TouchableOpacity>
+        </View>
+        <View className="pb-2">
+          <ImportanceLegend />
         </View>
       </View>
 
@@ -231,9 +237,19 @@ function EventCard({
   event: EventWithMeta;
   onPress: () => void;
 }) {
+  const config = IMPORTANCE[event.importance as Importance];
+
+  const handleLongPress = () => {
+    const lines: string[] = [config?.label ?? event.importance];
+    if (event.description) lines.push(event.description);
+    if (event.location) lines.push(`📍 ${event.location}`);
+    Alert.alert(event.title, lines.join('\n\n'));
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={handleLongPress}
       activeOpacity={0.8}
       className="mb-2 p-2 rounded-lg border border-slate-200 bg-white"
     >

@@ -83,12 +83,11 @@ export default function EditEventScreen() {
 
   const titleTrimmed = title.trim();
   const descriptionTrimmed = description.trim();
-  const descValid =
-    descriptionTrimmed.length > 0 && descriptionTrimmed.length <= MAX_DESCRIPTION_LENGTH;
+  const descValid = descriptionTrimmed.length <= MAX_DESCRIPTION_LENGTH;
   const dateValid = /^\d{4}-\d{2}-\d{2}$/.test(date.trim());
-  const timeValid = /^([01]?\d|2[0-3]):[0-5]\d$/.test(startTime.trim());
+  const timeValid = startTime.trim() === '' || /^([01]?\d|2[0-3]):[0-5]\d$/.test(startTime.trim());
   const durationNum = parseInt(durationMins.trim(), 10);
-  const durationValid = !isNaN(durationNum) && durationNum > 0;
+  const durationValid = durationMins.trim() === '' || (!isNaN(durationNum) && durationNum > 0);
   const canSubmit =
     !!id &&
     !!event &&
@@ -104,13 +103,15 @@ export default function EditEventScreen() {
     if (!canSubmit || !id) return;
     setSubmitting(true);
     try {
+      const timeStr = startTime.trim();
+      const dur = durationMins.trim() !== '' ? durationNum : null;
       await updateEvent(id, {
         title: titleTrimmed,
-        description: descriptionTrimmed,
+        description: descriptionTrimmed || null,
         importance,
         event_date: date.trim(),
-        start_time: `${startTime.trim()}:00`,
-        duration_mins: durationNum,
+        start_time: timeStr ? `${timeStr}:00` : null,
+        duration_mins: dur && dur > 0 ? dur : null,
         location: location.trim() || null,
       });
       router.back();
@@ -177,7 +178,7 @@ export default function EditEventScreen() {
             </TouchableOpacity>
             <Text className="text-2xl font-semibold text-slate-900 mb-1">Edit event</Text>
             <Text className="text-slate-500 text-base mb-6">
-              Update event details. Title and description are required.
+              Title and date are required. All other fields are optional.
             </Text>
 
             {error ? (
@@ -197,7 +198,7 @@ export default function EditEventScreen() {
             />
 
             <Text className="text-slate-600 text-sm mb-2">
-              Description (required, max {MAX_DESCRIPTION_LENGTH} chars)
+              Description (optional, max {MAX_DESCRIPTION_LENGTH} chars)
             </Text>
             <TextInput
               value={description}
@@ -246,7 +247,7 @@ export default function EditEventScreen() {
               className="h-12 border border-slate-200 rounded-xl px-4 text-slate-900 text-base mb-4"
             />
 
-            <Text className="text-slate-600 text-sm mb-2">Start time (HH:MM)</Text>
+            <Text className="text-slate-600 text-sm mb-2">Start time (HH:MM, optional)</Text>
             <TextInput
               value={startTime}
               onChangeText={setStartTime}
@@ -256,7 +257,7 @@ export default function EditEventScreen() {
               className="h-12 border border-slate-200 rounded-xl px-4 text-slate-900 text-base mb-4"
             />
 
-            <Text className="text-slate-600 text-sm mb-2">Duration (minutes)</Text>
+            <Text className="text-slate-600 text-sm mb-2">Duration (minutes, optional)</Text>
             <TextInput
               value={durationMins}
               onChangeText={setDurationMins}

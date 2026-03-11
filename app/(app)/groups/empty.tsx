@@ -24,6 +24,14 @@ export default function EmptyStateScreen() {
           Create your first group
         </Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.push('/groups/join')}
+        className="h-12 border border-slate-200 rounded-xl items-center justify-center active:opacity-80 mt-3"
+      >
+        <Text className="text-slate-700 font-medium text-base">
+          Join with a link
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

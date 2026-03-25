@@ -19,7 +19,7 @@ export default function AppIndexScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white items-center justify-center">
-      <ActivityIndicator size="large" className="text-slate-600" />
+      <ActivityIndicator size="large" color="#475569" />
       <Text className="mt-3 text-slate-500 text-base">Loading…</Text>
     </SafeAreaView>
   );

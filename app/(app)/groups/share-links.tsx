@@ -115,7 +115,7 @@ export default function ShareLinksScreen() {
         <View className="px-4 pt-4">
           {isLoading ? (
             <View className="py-8 items-center">
-              <ActivityIndicator size="large" className="text-slate-600" />
+              <ActivityIndicator size="large" color="#475569" />
               <Text className="mt-3 text-slate-500 text-sm">Loading share links…</Text>
             </View>
           ) : activeLinks.length === 0 ? (

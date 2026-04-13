@@ -58,6 +58,20 @@ export async function getGroupsForUser(userId: string): Promise<Group[]> {
   return (data as unknown as { groups: Group }[]).map(row => row.groups);
 }
 
+/**
+ * Return groups where the given user has a pending invite/request.
+ */
+export async function getPendingInvitesForUser(userId: string): Promise<Group[]> {
+  const { data, error } = await supabase
+    .from('group_members')
+    .select('groups!inner(*)')
+    .eq('user_id', userId)
+    .eq('status', 'pending');
+
+  if (error) throw error;
+  return (data as unknown as { groups: Group }[]).map(row => row.groups);
+}
+
 // ============================================================
 // MEMBERSHIP
 // ============================================================
@@ -104,6 +118,34 @@ export async function approveMember(groupId: string, userId: string): Promise<vo
  * Reject a pending member invite (sets status to 'removed').
  */
 export async function rejectMember(groupId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('group_members')
+    .update({ status: 'removed' })
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .eq('status', 'pending');
+
+  if (error) throw error;
+}
+
+/**
+ * Accept the current user's pending invite for a group.
+ */
+export async function acceptInvite(groupId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('group_members')
+    .update({ status: 'active' })
+    .eq('group_id', groupId)
+    .eq('user_id', userId)
+    .eq('status', 'pending');
+
+  if (error) throw error;
+}
+
+/**
+ * Decline the current user's pending invite for a group.
+ */
+export async function declineInvite(groupId: string, userId: string): Promise<void> {
   const { error } = await supabase
     .from('group_members')
     .update({ status: 'removed' })

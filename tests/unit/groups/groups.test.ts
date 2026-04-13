@@ -340,8 +340,8 @@ describe('demoteMember', () => {
 // isAdmin is computed synchronously in the hook body:
 //   !!user && members.some(m => m.user_id === user.id && m.role === 'admin' && m.status === 'active')
 //
-// We control `user` via the useAuth mock and `members` by overriding the 3rd
-// useState call (index 2) via stateConfig.overrides.
+// We control `user` via the useAuth mock and `members` by overriding the 4th
+// useState call (index 3) via stateConfig.overrides.
 
 describe('useGroup — isAdmin derivation', () => {
   beforeEach(() => {
@@ -363,8 +363,8 @@ describe('useGroup — isAdmin derivation', () => {
       signOut: vi.fn(),
       updateProfile: vi.fn(),
     });
-    // Inject admin member at useState call index 2 (members slot)
-    stateConfig.overrides[2] = [ADMIN_MEMBER];
+    // Inject admin member at useState call index 3 (members slot)
+    stateConfig.overrides[3] = [ADMIN_MEMBER];
 
     const { isAdmin } = useGroup();
 
@@ -383,7 +383,7 @@ describe('useGroup — isAdmin derivation', () => {
       signOut: vi.fn(),
       updateProfile: vi.fn(),
     });
-    stateConfig.overrides[2] = [REGULAR_MEMBER];
+    stateConfig.overrides[3] = [REGULAR_MEMBER];
 
     const { isAdmin } = useGroup();
 
@@ -402,7 +402,7 @@ describe('useGroup — isAdmin derivation', () => {
       signOut: vi.fn(),
       updateProfile: vi.fn(),
     });
-    stateConfig.overrides[2] = [ADMIN_MEMBER];
+    stateConfig.overrides[3] = [ADMIN_MEMBER];
 
     const { isAdmin } = useGroup();
 

@@ -69,10 +69,12 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 // ── Supabase mock ─────────────────────────────────────────────────────────────
 
 let mockFromChain: ReturnType<typeof vi.fn>;
+let mockRpcChain: ReturnType<typeof vi.fn>;
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: (...args: unknown[]) => mockFromChain(...args),
+    rpc: (...args: unknown[]) => mockRpcChain(...args),
     auth: { getUser: vi.fn() },
   },
 }));
@@ -152,29 +154,37 @@ function resetStateConfig() {
 // ── lib/groups.ts tests ───────────────────────────────────────────────────────
 
 describe('createGroup', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRpcChain = vi.fn(() => buildChain({ data: MOCK_GROUP, error: null }));
+  });
 
   it('resolves with the created Group on success', async () => {
-    mockFromChain = vi.fn(() => buildChain({ data: MOCK_GROUP, error: null }));
-
     const result = await createGroup({ name: 'Smith Family' });
 
     expect(result).toEqual(MOCK_GROUP);
-    expect(mockFromChain).toHaveBeenCalledWith('groups');
+    expect(mockRpcChain).toHaveBeenCalledWith('create_group', {
+      p_name: 'Smith Family',
+      p_description: null,
+    });
   });
 
   it('includes description when provided', async () => {
     const groupWithDesc = { ...MOCK_GROUP, description: 'Our family group' };
-    mockFromChain = vi.fn(() => buildChain({ data: groupWithDesc, error: null }));
+    mockRpcChain = vi.fn(() => buildChain({ data: groupWithDesc, error: null }));
 
     const result = await createGroup({ name: 'Smith Family', description: 'Our family group' });
 
     expect(result.description).toBe('Our family group');
+    expect(mockRpcChain).toHaveBeenCalledWith('create_group', {
+      p_name: 'Smith Family',
+      p_description: 'Our family group',
+    });
   });
 
   it('throws when Supabase returns an error', async () => {
     const dbError = new Error('Insert failed');
-    mockFromChain = vi.fn(() => buildChain({ data: null, error: dbError }));
+    mockRpcChain = vi.fn(() => buildChain({ data: null, error: dbError }));
 
     await expect(createGroup({ name: 'Smith Family' })).rejects.toThrow('Insert failed');
   });
@@ -340,8 +350,8 @@ describe('demoteMember', () => {
 // isAdmin is computed synchronously in the hook body:
 //   !!user && members.some(m => m.user_id === user.id && m.role === 'admin' && m.status === 'active')
 //
-// We control `user` via the useAuth mock and `members` by overriding the 3rd
-// useState call (index 2) via stateConfig.overrides.
+// We control `user` via the useAuth mock and `members` by overriding the 4th
+// useState call (index 3) via stateConfig.overrides.
 
 describe('useGroup — isAdmin derivation', () => {
   beforeEach(() => {
@@ -363,8 +373,8 @@ describe('useGroup — isAdmin derivation', () => {
       signOut: vi.fn(),
       updateProfile: vi.fn(),
     });
-    // Inject admin member at useState call index 2 (members slot)
-    stateConfig.overrides[2] = [ADMIN_MEMBER];
+    // Inject admin member at useState call index 3 (members slot)
+    stateConfig.overrides[3] = [ADMIN_MEMBER];
 
     const { isAdmin } = useGroup();
 
@@ -383,7 +393,7 @@ describe('useGroup — isAdmin derivation', () => {
       signOut: vi.fn(),
       updateProfile: vi.fn(),
     });
-    stateConfig.overrides[2] = [REGULAR_MEMBER];
+    stateConfig.overrides[3] = [REGULAR_MEMBER];
 
     const { isAdmin } = useGroup();
 
@@ -402,7 +412,7 @@ describe('useGroup — isAdmin derivation', () => {
       signOut: vi.fn(),
       updateProfile: vi.fn(),
     });
-    stateConfig.overrides[2] = [ADMIN_MEMBER];
+    stateConfig.overrides[3] = [ADMIN_MEMBER];
 
     const { isAdmin } = useGroup();
 

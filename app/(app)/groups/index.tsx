@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,7 +11,17 @@ import EmptyStateScreen from './empty';
  */
 export default function GroupsIndexScreen() {
   const router = useRouter();
-  const { groups, isLoading, error, activeGroup, isAdmin } = useGroup();
+  const {
+    groups,
+    pendingInvites,
+    isLoading,
+    error,
+    activeGroup,
+    isAdmin,
+    acceptInvite,
+    declineInvite,
+  } = useGroup();
+  const [inviteActionGroupId, setInviteActionGroupId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -21,7 +32,7 @@ export default function GroupsIndexScreen() {
     );
   }
 
-  if (groups.length === 0) {
+  if (groups.length === 0 && pendingInvites.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
         <EmptyStateScreen />
@@ -38,6 +49,58 @@ export default function GroupsIndexScreen() {
         {error ? (
           <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6">
             <Text className="text-red-700 text-sm">{error}</Text>
+          </View>
+        ) : null}
+        {pendingInvites.length > 0 ? (
+          <View className="mb-6">
+            <Text className="text-slate-700 font-semibold text-sm mb-2">
+              Pending invites
+            </Text>
+            {pendingInvites.map((group) => (
+              <View
+                key={group.id}
+                className="border border-slate-200 rounded-xl px-4 py-3 mb-3"
+              >
+                <Text className="text-slate-900 font-medium">{group.name}</Text>
+                {group.description ? (
+                  <Text className="text-slate-500 text-sm mt-1">{group.description}</Text>
+                ) : null}
+                <View className="flex-row gap-3 mt-3">
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setInviteActionGroupId(group.id);
+                      try {
+                        await acceptInvite(group.id);
+                      } finally {
+                        setInviteActionGroupId(null);
+                      }
+                    }}
+                    disabled={inviteActionGroupId === group.id}
+                    className="flex-1 h-10 bg-slate-900 rounded-lg items-center justify-center"
+                  >
+                    {inviteActionGroupId === group.id ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text className="text-white font-medium text-sm">Accept</Text>
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setInviteActionGroupId(group.id);
+                      try {
+                        await declineInvite(group.id);
+                      } finally {
+                        setInviteActionGroupId(null);
+                      }
+                    }}
+                    disabled={inviteActionGroupId === group.id}
+                    className="flex-1 h-10 border border-slate-300 rounded-lg items-center justify-center"
+                  >
+                    <Text className="text-slate-700 font-medium text-sm">Decline</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
           </View>
         ) : null}
         <Text className="text-slate-500 text-sm mb-4">
@@ -61,23 +124,27 @@ export default function GroupsIndexScreen() {
             Create another group
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push('/groups/invite')}
-          className="h-12 border border-slate-300 rounded-xl items-center justify-center mb-3"
-        >
-          <Text className="text-slate-700 font-medium text-base">
-            Invite member
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push('/groups/members')}
-          className="h-12 border border-slate-300 rounded-xl items-center justify-center mb-3"
-        >
-          <Text className="text-slate-700 font-medium text-base">
-            Manage members
-          </Text>
-        </TouchableOpacity>
-        {isAdmin ? (
+        {activeGroup ? (
+          <TouchableOpacity
+            onPress={() => router.push('/groups/invite')}
+            className="h-12 border border-slate-300 rounded-xl items-center justify-center mb-3"
+          >
+            <Text className="text-slate-700 font-medium text-base">
+              Invite member
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        {activeGroup ? (
+          <TouchableOpacity
+            onPress={() => router.push('/groups/members')}
+            className="h-12 border border-slate-300 rounded-xl items-center justify-center mb-3"
+          >
+            <Text className="text-slate-700 font-medium text-base">
+              Manage members
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        {activeGroup && isAdmin ? (
           <TouchableOpacity
             onPress={() => router.push('/groups/share-links')}
             className="h-12 border border-slate-300 rounded-xl items-center justify-center"

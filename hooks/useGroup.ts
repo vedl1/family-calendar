@@ -10,7 +10,10 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   createGroup as libCreateGroup,
   getGroupsForUser,
+  getPendingInvitesForUser,
   inviteMember as libInviteMember,
+  acceptInvite as libAcceptInvite,
+  declineInvite as libDeclineInvite,
   promoteMember as libPromoteMember,
   demoteMember as libDemoteMember,
   removeMember as libRemoveMember,
@@ -24,6 +27,8 @@ export interface GroupState {
   activeGroup: Group | null;
   /** All groups the current user is an active member of. */
   groups: Group[];
+  /** Groups where the current user has a pending invitation. */
+  pendingInvites: Group[];
   /** All members of the active group, joined with their user profile rows. */
   members: (GroupMember & { user: User })[];
   /** True when the current user holds the admin role in the active group. */
@@ -32,6 +37,8 @@ export interface GroupState {
   setActiveGroup: (group: Group) => void;
   createGroup: (params: { name: string; description?: string }) => Promise<void>;
   inviteMember: (emailOrPhone: string) => Promise<void>;
+  acceptInvite: (groupId: string) => Promise<void>;
+  declineInvite: (groupId: string) => Promise<void>;
   promoteMember: (userId: string) => Promise<void>;
   demoteMember: (userId: string) => Promise<void>;
   removeMember: (userId: string) => Promise<void>;
@@ -44,6 +51,7 @@ export function useGroup(): GroupState {
   const { user } = useAuth();
 
   const [groups, setGroups] = useState<Group[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<Group[]>([]);
   const [activeGroup, setActiveGroupState] = useState<Group | null>(null);
   const [members, setMembers] = useState<(GroupMember & { user: User })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +65,7 @@ export function useGroup(): GroupState {
   useEffect(() => {
     if (!user) {
       setGroups([]);
+      setPendingInvites([]);
       setActiveGroupState(null);
       setMembers([]);
       setIsLoading(false);
@@ -70,10 +79,14 @@ export function useGroup(): GroupState {
         setIsLoading(true);
         setError(null);
 
-        const fetched = await getGroupsForUser(user.id);
+        const [fetched, pending] = await Promise.all([
+          getGroupsForUser(user.id),
+          getPendingInvitesForUser(user.id),
+        ]);
         if (cancelled) return;
 
         setGroups(fetched);
+        setPendingInvites(pending);
 
         const storedId = await AsyncStorage.getItem(ACTIVE_GROUP_KEY);
         if (cancelled) return;
@@ -184,6 +197,42 @@ export function useGroup(): GroupState {
     }
   };
 
+  const acceptInvite = async (groupId: string): Promise<void> => {
+    if (!user) throw new Error('Not authenticated');
+    try {
+      setError(null);
+      await libAcceptInvite(groupId, user.id);
+      const accepted = pendingInvites.find(g => g.id === groupId);
+      setPendingInvites(prev => prev.filter(g => g.id !== groupId));
+      if (accepted) {
+        setGroups(prev =>
+          prev.some(g => g.id === accepted.id) ? prev : [...prev, accepted],
+        );
+        if (!activeGroup) {
+          setActiveGroupState(accepted);
+          await AsyncStorage.setItem(ACTIVE_GROUP_KEY, accepted.id);
+        }
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to accept invite';
+      setError(msg);
+      throw e;
+    }
+  };
+
+  const declineInvite = async (groupId: string): Promise<void> => {
+    if (!user) throw new Error('Not authenticated');
+    try {
+      setError(null);
+      await libDeclineInvite(groupId, user.id);
+      setPendingInvites(prev => prev.filter(g => g.id !== groupId));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to decline invite';
+      setError(msg);
+      throw e;
+    }
+  };
+
   const promoteMember = async (userId: string): Promise<void> => {
     if (!activeGroup) throw new Error('No active group selected');
     try {
@@ -254,11 +303,14 @@ export function useGroup(): GroupState {
   return {
     activeGroup,
     groups,
+    pendingInvites,
     members,
     isAdmin,
     setActiveGroup,
     createGroup,
     inviteMember,
+    acceptInvite,
+    declineInvite,
     promoteMember,
     demoteMember,
     removeMember,

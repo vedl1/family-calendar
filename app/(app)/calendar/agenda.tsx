@@ -12,6 +12,8 @@ import type { EventWithMeta, Importance } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
 import { ImportanceShape } from '@/components/ImportanceShape';
+import GroupSelector from '@/components/GroupSelector';
+import { ImportanceLegend } from '@/components/ImportanceLegend';
 
 /** Format start_time "HH:MM:SS" as "H:MM am/pm". */
 function formatTime(startTime: string | null): string {
@@ -96,6 +98,10 @@ export default function AgendaScreen() {
         <TouchableOpacity onPress={() => router.back()} className="mb-2">
           <Text className="text-slate-500 text-base">← Back</Text>
         </TouchableOpacity>
+        <GroupSelector />
+        <View className="mt-2 mb-3">
+          <ImportanceLegend />
+        </View>
         <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
           <TouchableOpacity
             onPress={() => router.replace('/calendar/week')}

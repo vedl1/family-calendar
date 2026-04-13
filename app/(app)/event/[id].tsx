@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +15,7 @@ import { IMPORTANCE } from '@/contracts/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
+import { supabase } from '@/lib/supabase';
 
 function formatTime(startTime: string | null): string {
   if (!startTime) return 'All day';
@@ -37,6 +39,16 @@ function formatDate(dateStr: string): string {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function getInitials(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return '?';
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0]! + parts[parts.length - 1][0]!).toUpperCase();
+  }
+  return trimmed.slice(0, 2).toUpperCase();
 }
 
 /**
@@ -85,6 +97,46 @@ export default function EventDetailScreen() {
       cancelled = true;
     };
   }, [id, groupId, getEvent]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`event-detail:${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'events',
+          filter: `id=eq.${id}`,
+        },
+        async (payload) => {
+          if (payload.eventType === 'DELETE') {
+            Alert.alert('Event removed', 'This event has been removed.');
+            router.back();
+            return;
+          }
+
+          try {
+            const refreshed = await getEvent(id);
+            if (!refreshed) {
+              Alert.alert('Event removed', 'This event has been removed.');
+              router.back();
+              return;
+            }
+            setEvent(refreshed);
+          } catch {
+            // Ignore transient refresh failures; hook error banner handles details.
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [id, getEvent, router]);
 
   const handleRSVP = async (status: 'attending' | 'declined') => {
     if (!id || hasPassed || rsvping) return;
@@ -244,9 +296,23 @@ export default function EventDetailScreen() {
             ) : (
               <Fragment>
                 {attending.map((r) => (
-                  <Text key={r.id} className="text-slate-700 text-sm py-0.5">
-                    {r.user?.display_name ?? 'Unknown'}
-                  </Text>
+                  <View key={r.id} className="flex-row items-center py-1">
+                    {r.user?.avatar_url ? (
+                      <Image
+                        source={{ uri: r.user.avatar_url }}
+                        className="w-7 h-7 rounded-full"
+                      />
+                    ) : (
+                      <View className="w-7 h-7 rounded-full bg-slate-200 items-center justify-center">
+                        <Text className="text-slate-600 text-xs font-medium">
+                          {getInitials(r.user?.display_name ?? 'Unknown')}
+                        </Text>
+                      </View>
+                    )}
+                    <Text className="text-slate-700 text-sm ml-2">
+                      {r.user?.display_name ?? 'Unknown'}
+                    </Text>
+                  </View>
                 ))}
               </Fragment>
             )}
@@ -258,9 +324,23 @@ export default function EventDetailScreen() {
             ) : (
               <Fragment>
                 {declined.map((r) => (
-                  <Text key={r.id} className="text-slate-700 text-sm py-0.5">
-                    {r.user?.display_name ?? 'Unknown'}
-                  </Text>
+                  <View key={r.id} className="flex-row items-center py-1">
+                    {r.user?.avatar_url ? (
+                      <Image
+                        source={{ uri: r.user.avatar_url }}
+                        className="w-7 h-7 rounded-full"
+                      />
+                    ) : (
+                      <View className="w-7 h-7 rounded-full bg-slate-200 items-center justify-center">
+                        <Text className="text-slate-600 text-xs font-medium">
+                          {getInitials(r.user?.display_name ?? 'Unknown')}
+                        </Text>
+                      </View>
+                    )}
+                    <Text className="text-slate-700 text-sm ml-2">
+                      {r.user?.display_name ?? 'Unknown'}
+                    </Text>
+                  </View>
                 ))}
               </Fragment>
             )}

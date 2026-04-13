@@ -10,11 +10,12 @@ export default function RootIndex() {
   useEffect(() => {
     if (isLoading) return;
     if (isAuthenticated) {
-      if (user) {
-        router.replace('/groups');
-      } else {
+      // Enforce onboarding before entering the authenticated app shell.
+      if (!user || !user.display_name) {
         router.replace('/onboarding');
+        return;
       }
+      router.replace('/calendar/week');
     } else {
       router.replace('/sign-in');
     }

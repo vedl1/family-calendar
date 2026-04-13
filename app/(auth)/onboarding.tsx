@@ -37,7 +37,7 @@ function getInitials(displayName: string): string {
  */
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { isLoading, isAuthenticated, updateProfile } = useAuth();
+  const { isLoading, isAuthenticated, user, updateProfile } = useAuth();
 
   const [displayName, setDisplayName] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
@@ -45,10 +45,15 @@ export default function OnboardingScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+    if (!isAuthenticated) {
       router.replace('/sign-in');
+      return;
     }
-  }, [isAuthenticated, isLoading, router]);
+    if (user?.display_name) {
+      router.replace('/calendar/week');
+    }
+  }, [isAuthenticated, isLoading, user, router]);
 
   const displayNameTrimmed = displayName.trim();
   const canSubmit = displayNameTrimmed.length > 0 && !submitting;
@@ -104,7 +109,7 @@ export default function OnboardingScreen() {
         display_name: displayNameTrimmed,
         ...(avatarUrl && { avatar_url: avatarUrl }),
       });
-      router.replace('/');
+      router.replace('/calendar/week');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {

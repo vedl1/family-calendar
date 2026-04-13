@@ -25,7 +25,7 @@ export default function GroupsIndexScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white items-center justify-center" style={{ flex: 1 }}>
         <ActivityIndicator size="large" className="text-slate-600" />
         <Text className="mt-3 text-slate-500 text-base">Loading groups…</Text>
       </SafeAreaView>
@@ -34,7 +34,7 @@ export default function GroupsIndexScreen() {
 
   if (groups.length === 0 && pendingInvites.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
+      <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
         <EmptyStateScreen />
       </SafeAreaView>
     );

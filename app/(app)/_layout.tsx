@@ -8,15 +8,21 @@ import { useAuth } from '@/hooks/useAuth';
  */
 export default function AppLayout() {
   const router = useRouter();
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return;
+    if (!isAuthenticated) {
       router.replace('/sign-in');
+      return;
     }
-  }, [isLoading, isAuthenticated, router]);
+    // Guard direct deep-links into (app) before onboarding completion.
+    if (!user || !user.display_name) {
+      router.replace('/onboarding');
+    }
+  }, [isLoading, isAuthenticated, user, router]);
 
-  if (!isLoading && !isAuthenticated) return null;
+  if (!isLoading && (!isAuthenticated || !user || !user.display_name)) return null;
 
   return (
     <Stack

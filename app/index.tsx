@@ -5,16 +5,21 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function RootIndex() {
   const router = useRouter();
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     if (isLoading) return;
     if (isAuthenticated) {
-      router.replace('/groups');
+      // Enforce onboarding before entering the authenticated app shell.
+      if (!user || !user.display_name) {
+        router.replace('/onboarding');
+        return;
+      }
+      router.replace('/calendar/week');
     } else {
       router.replace('/sign-in');
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, user, router]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>

@@ -57,6 +57,19 @@ function getMonthRange(): { from: string; to: string } {
   };
 }
 
+function toUserErrorMessage(error: unknown, fallback: string): string {
+  const raw = error instanceof Error ? error.message : '';
+  const normalized = raw.toLowerCase();
+  if (
+    normalized.includes('fetch failed') ||
+    normalized.includes('network request failed') ||
+    normalized.includes('network error')
+  ) {
+    return 'No connection — your changes were not saved. Try again.';
+  }
+  return raw || fallback;
+}
+
 export function useEvents(groupId: string | null): EventsState {
   const { user } = useAuth();
 
@@ -91,7 +104,7 @@ export function useEvents(groupId: string | null): EventsState {
         setEvents(fetched);
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Failed to load events');
+          setError(toUserErrorMessage(e, 'Failed to load events'));
         }
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -125,9 +138,9 @@ export function useEvents(groupId: string | null): EventsState {
       setError(null);
       return await libGetEvent(eventId);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to load event';
+      const msg = toUserErrorMessage(e, 'Failed to load event');
       setError(msg);
-      throw e;
+      throw new Error(msg);
     }
   }, []);
 
@@ -144,9 +157,9 @@ export function useEvents(groupId: string | null): EventsState {
       setError(null);
       await libCreateEvent(params);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to create event';
+      const msg = toUserErrorMessage(e, 'Failed to create event');
       setError(msg);
-      throw e;
+      throw new Error(msg);
     }
   }, []);
 
@@ -158,9 +171,9 @@ export function useEvents(groupId: string | null): EventsState {
       setError(null);
       await libUpdateEvent(eventId, params);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to update event';
+      const msg = toUserErrorMessage(e, 'Failed to update event');
       setError(msg);
-      throw e;
+      throw new Error(msg);
     }
   }, []);
 
@@ -169,9 +182,9 @@ export function useEvents(groupId: string | null): EventsState {
       setError(null);
       await libDeleteEvent(eventId);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to delete event';
+      const msg = toUserErrorMessage(e, 'Failed to delete event');
       setError(msg);
-      throw e;
+      throw new Error(msg);
     }
   }, []);
 
@@ -214,9 +227,9 @@ export function useEvents(groupId: string | null): EventsState {
           .then(fetched => setEvents(fetched))
           .catch(() => undefined);
       }
-      const msg = e instanceof Error ? e.message : 'Failed to update RSVP';
+      const msg = toUserErrorMessage(e, 'Failed to update RSVP');
       setError(msg);
-      throw e;
+      throw new Error(msg);
     }
   }, [user]);
 
@@ -240,9 +253,9 @@ export function useEvents(groupId: string | null): EventsState {
           .then(fetched => setEvents(fetched))
           .catch(() => undefined);
       }
-      const msg = e instanceof Error ? e.message : 'Failed to remove RSVP';
+      const msg = toUserErrorMessage(e, 'Failed to remove RSVP');
       setError(msg);
-      throw e;
+      throw new Error(msg);
     }
   }, [user]);
 

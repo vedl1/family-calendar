@@ -12,6 +12,8 @@ import type { EventWithMeta, Importance } from '@/contracts/types';
 import { useGroup } from '@/hooks/useGroup';
 import { useEvents } from '@/hooks/useEvents';
 import { ImportanceShape } from '@/components/ImportanceShape';
+import GroupSelector from '@/components/GroupSelector';
+import { ImportanceLegend } from '@/components/ImportanceLegend';
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -51,6 +53,8 @@ export default function WeekViewScreen() {
   const { events, isLoading, error } = useEvents(groupId);
 
   const [weekOffset, setWeekOffset] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [tooltipEvent, setTooltipEvent] = useState<EventWithMeta | null>(null);
 
   const weekStart = useMemo(() => {
     const base = getWeekStart(new Date());
@@ -93,6 +97,7 @@ export default function WeekViewScreen() {
 
   const goPrev = () => setWeekOffset((o) => o - 1);
   const goNext = () => setWeekOffset((o) => o + 1);
+  const SWIPE_THRESHOLD = 50;
 
   const weekTitle =
     weekOffset === 0
@@ -126,6 +131,10 @@ export default function WeekViewScreen() {
     <SafeAreaView className="flex-1 bg-white" style={{ flex: 1 }} edges={['top', 'bottom']}>
       <View className="flex-1" style={{ flex: 1, position: 'relative' }}>
       <View className="px-4 pt-4 pb-2 border-b border-slate-200">
+        <GroupSelector />
+        <View className="mt-2 mb-3">
+          <ImportanceLegend />
+        </View>
         <View className="flex-row bg-slate-100 rounded-xl p-1 mx-4 mb-3">
           <TouchableOpacity
             onPress={() => {}}
@@ -165,55 +174,88 @@ export default function WeekViewScreen() {
         </View>
       ) : null}
 
-      <ScrollView
+      <View
         className="flex-1"
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        horizontal
-        showsHorizontalScrollIndicator={true}
+        onTouchStart={(e) => setTouchStartX(e.nativeEvent.pageX)}
+        onTouchEnd={(e) => {
+          if (touchStartX == null) return;
+          const deltaX = e.nativeEvent.pageX - touchStartX;
+          if (deltaX >= SWIPE_THRESHOLD) goPrev();
+          if (deltaX <= -SWIPE_THRESHOLD) goNext();
+          setTouchStartX(null);
+        }}
       >
-        {weekDates.map((day) => {
-          const dateStr = toISODate(day);
-          const dayEvents = eventsByDay[dateStr] ?? [];
-          const dayNum = day.getDate();
-          const isToday = toISODate(new Date()) === dateStr;
+        <ScrollView
+          className="flex-1"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          horizontal
+          showsHorizontalScrollIndicator={true}
+        >
+          {weekDates.map((day) => {
+            const dateStr = toISODate(day);
+            const dayEvents = eventsByDay[dateStr] ?? [];
+            const dayNum = day.getDate();
+            const isToday = toISODate(new Date()) === dateStr;
 
-          return (
-            <View
-              key={dateStr}
-              className="w-28 flex-shrink-0 pt-3 px-1 border-r border-slate-100"
-            >
-              <View className="items-center mb-2">
-                <Text className="text-slate-400 text-xs font-medium">
-                  {WEEKDAY_LABELS[day.getDay() === 0 ? 6 : day.getDay() - 1]}
-                </Text>
-                <View
-                  className={`mt-1 w-8 h-8 rounded-full items-center justify-center ${
-                    isToday ? 'bg-slate-900' : 'bg-slate-100'
-                  }`}
-                >
-                  <Text
-                    className={`text-sm font-semibold ${
-                      isToday ? 'text-white' : 'text-slate-700'
+            return (
+              <View
+                key={dateStr}
+                className="w-28 flex-shrink-0 pt-3 px-1 border-r border-slate-100"
+              >
+                <View className="items-center mb-2">
+                  <Text className="text-slate-400 text-xs font-medium">
+                    {WEEKDAY_LABELS[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                  </Text>
+                  <View
+                    className={`mt-1 w-8 h-8 rounded-full items-center justify-center ${
+                      isToday ? 'bg-slate-900' : 'bg-slate-100'
                     }`}
                   >
-                    {dayNum}
-                  </Text>
+                    <Text
+                      className={`text-sm font-semibold ${
+                        isToday ? 'text-white' : 'text-slate-700'
+                      }`}
+                    >
+                      {dayNum}
+                    </Text>
+                  </View>
                 </View>
+                {dayEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onPress={() => router.push(`/event/${event.id}`)}
+                    onLongPress={() => setTooltipEvent(event)}
+                  />
+                ))}
               </View>
-              {dayEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  onPress={() =>
-                    router.push(`/event/${event.id}`)
-                  }
-                />
-              ))}
-            </View>
-          );
-        })}
-      </ScrollView>
+            );
+          })}
+        </ScrollView>
+      </View>
+      {tooltipEvent ? (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setTooltipEvent(null)}
+          className="absolute inset-0 px-4 justify-end pb-24"
+        >
+          <View className="bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
+            <Text className="text-slate-900 font-semibold text-sm mb-1">
+              {tooltipEvent.title}
+            </Text>
+            <Text className="text-slate-500 text-xs mb-1">
+              Logged by {tooltipEvent.creator?.display_name ?? 'Unknown'}
+            </Text>
+            <Text className="text-slate-600 text-sm mb-1" numberOfLines={2}>
+              {tooltipEvent.description ?? 'No description'}
+            </Text>
+            <Text className="text-slate-500 text-xs">
+              Importance: {tooltipEvent.importance}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      ) : null}
       <TouchableOpacity
         onPress={() => router.push('/event/create')}
         className="absolute bottom-6 right-6 w-14 h-14 bg-slate-900 rounded-full items-center justify-center shadow-lg"
@@ -228,13 +270,16 @@ export default function WeekViewScreen() {
 function EventCard({
   event,
   onPress,
+  onLongPress,
 }: {
   event: EventWithMeta;
   onPress: () => void;
+  onLongPress: () => void;
 }) {
   return (
     <TouchableOpacity
       onPress={onPress}
+      onLongPress={onLongPress}
       activeOpacity={0.8}
       className="mb-2 p-2 rounded-lg border border-slate-200 bg-white"
     >

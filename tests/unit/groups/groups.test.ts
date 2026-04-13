@@ -69,10 +69,12 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 // ── Supabase mock ─────────────────────────────────────────────────────────────
 
 let mockFromChain: ReturnType<typeof vi.fn>;
+let mockRpcChain: ReturnType<typeof vi.fn>;
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     from: (...args: unknown[]) => mockFromChain(...args),
+    rpc: (...args: unknown[]) => mockRpcChain(...args),
     auth: { getUser: vi.fn() },
   },
 }));
@@ -152,29 +154,37 @@ function resetStateConfig() {
 // ── lib/groups.ts tests ───────────────────────────────────────────────────────
 
 describe('createGroup', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRpcChain = vi.fn(() => buildChain({ data: MOCK_GROUP, error: null }));
+  });
 
   it('resolves with the created Group on success', async () => {
-    mockFromChain = vi.fn(() => buildChain({ data: MOCK_GROUP, error: null }));
-
     const result = await createGroup({ name: 'Smith Family' });
 
     expect(result).toEqual(MOCK_GROUP);
-    expect(mockFromChain).toHaveBeenCalledWith('groups');
+    expect(mockRpcChain).toHaveBeenCalledWith('create_group', {
+      p_name: 'Smith Family',
+      p_description: null,
+    });
   });
 
   it('includes description when provided', async () => {
     const groupWithDesc = { ...MOCK_GROUP, description: 'Our family group' };
-    mockFromChain = vi.fn(() => buildChain({ data: groupWithDesc, error: null }));
+    mockRpcChain = vi.fn(() => buildChain({ data: groupWithDesc, error: null }));
 
     const result = await createGroup({ name: 'Smith Family', description: 'Our family group' });
 
     expect(result.description).toBe('Our family group');
+    expect(mockRpcChain).toHaveBeenCalledWith('create_group', {
+      p_name: 'Smith Family',
+      p_description: 'Our family group',
+    });
   });
 
   it('throws when Supabase returns an error', async () => {
     const dbError = new Error('Insert failed');
-    mockFromChain = vi.fn(() => buildChain({ data: null, error: dbError }));
+    mockRpcChain = vi.fn(() => buildChain({ data: null, error: dbError }));
 
     await expect(createGroup({ name: 'Smith Family' })).rejects.toThrow('Insert failed');
   });
